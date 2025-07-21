@@ -1,4 +1,18 @@
 [
   "truworths",
-  "shoprite"
+  "shoprite",
+  {
+    "store": "Shoprite",
+    "age": 35,
+    "province": "Gauteng",
+    "city": "Pretoria",
+    "town": "Gauteng"
+  },
+  {
+    "store": "Shoprite",
+    "age": 35,
+    "province": "Gauteng",
+    "city": "Pretoria",
+    "town": "Gauteng"
+  }
 ]

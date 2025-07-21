@@ -58,5 +58,62 @@
       "Any suggestions for improvement?": "credit should be adjustable"
     },
     "timestamp": "2025-07-21T17:46:32.778829"
+  },
+  {
+    "user": {
+      "name": "Kgothatso Thooe",
+      "phone": "0751245698",
+      "email": "kgothatsothooe@gmail.com"
+    },
+    "form": "Retail Experience",
+    "responses": {
+      "Age": 35,
+      "Province": "Gauteng",
+      "City": "Pretoria",
+      "Town": "Gauteng",
+      "Which retail stores do you visit most often?": "Shoprite",
+      "How satisfied are you with the cleanliness and security of these stores?": "Very Satisfied",
+      "What do you value most: price, quality, or convenience?": "Price",
+      "Any suggestions for improvement?": "more stock on pay day please"
+    },
+    "timestamp": "2025-07-21T18:32:11.815161"
+  },
+  {
+    "user": {
+      "name": "Kgothatso Thooe",
+      "phone": "0751245698",
+      "email": "kgothatsothooe@gmail.com"
+    },
+    "form": "Retail Experience",
+    "responses": {
+      "Age": 35,
+      "Province": "Gauteng",
+      "City": "Pretoria",
+      "Town": "Gauteng",
+      "Which retail stores do you visit most often?": "Shoprite",
+      "How satisfied are you with the cleanliness and security of these stores?": "Very Satisfied",
+      "What do you value most: price, quality, or convenience?": "Price",
+      "Any suggestions for improvement?": "more stock on pay day please"
+    },
+    "timestamp": "2025-07-21T18:32:15.481343"
+  },
+  {
+    "user": {
+      "name": "Kgothatso Thooe",
+      "phone": "0751245698",
+      "email": "kgothatsothooe@gmail.com"
+    },
+    "form": "Public Services",
+    "responses": {
+      "Age": 25,
+      "Province": "Kwa  Zulu Natal",
+      "City": "Gauteng",
+      "Town": "Thembisa",
+      "Which public services do you use most (e.g., transport, clinics, libraries)?": "water and electricity",
+      "How would you rate their quality?": "Average",
+      "What is the biggest challenge you face with public services?": "loadshedding and water shortage",
+      "What improvement would you like to see?": ""
+    },
+    "timestamp": "2025-07-21T18:38:12.413672"
   }
 ]

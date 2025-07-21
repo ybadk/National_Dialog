@@ -41,9 +41,38 @@ CSV_PATH = os.path.join(DATA_DIR, "users.csv")
 
 # --- SIDEBAR LINKS ---
 st.sidebar.title("Tourist Attractions")
-st.sidebar.markdown('[Facebook](https://www.facebook.com/TshwaneTourismAssociation)')
-st.sidebar.markdown('[X](https://twitter.com/Tshwane_Tourism)')
-st.sidebar.markdown('[Youtube](https://www.youtube.com/channel/UCXeVsem77xzvepVaYJKZtlw)')
+sidebar_css = """
+<style>
+.sidebar-link-btn {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    border: none;
+    width: 100%;
+    min-width: 180px;
+    max-width: 100%;
+    display: block;
+    text-align: center;
+    padding: 0.7em 0;
+    margin-bottom: 0.5em;
+    border-radius: 8px;
+    transition: box-shadow 0.2s, background 0.2s;
+    box-shadow: none;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+.sidebar-link-btn:hover {
+    background: rgba(30,64,175,0.7);
+    color: #fff;
+    box-shadow: 0 0 10px 2px #1e40af;
+}
+</style>
+"""
+st.markdown(sidebar_css, unsafe_allow_html=True)
+st.sidebar.markdown('<a class="sidebar-link-btn" href="https://www.facebook.com/TshwaneTourismAssociation" target="_blank">Facebook</a>', unsafe_allow_html=True)
+st.sidebar.markdown('<a class="sidebar-link-btn" href="https://twitter.com/Tshwane_Tourism" target="_blank">X</a>', unsafe_allow_html=True)
+st.sidebar.markdown('<a class="sidebar-link-btn" href="https://www.youtube.com/channel/UCXeVsem77xzvepVaYJKZtlw" target="_blank">Youtube</a>', unsafe_allow_html=True)
 
 def is_valid_sa_phone(phone):
     # Accepts 0[6-8]XXXXXXXX or +27[6-8]XXXXXXXX
@@ -172,6 +201,15 @@ for idx, (tab, form) in enumerate(zip(form_tab, FORM_QUESTIONS)):
     with tab:
         with st.form(f"form_{idx}"):
             responses = {}
+            # New demographic fields
+            age = st.number_input("Your Age", min_value=10, max_value=120, key=f"age_{idx}")
+            province = st.text_input("Province", key=f"province_{idx}")
+            city = st.text_input("City", key=f"city_{idx}")
+            town = st.text_input("Town", key=f"town_{idx}")
+            responses["Age"] = age
+            responses["Province"] = province
+            responses["City"] = city
+            responses["Town"] = town
             for q_idx, (q, qtype, *opts) in enumerate(form["questions"]):
                 if qtype == "text":
                     responses[q] = st.text_input(q, key=f"q_{idx}_{q_idx}")
@@ -193,7 +231,13 @@ for idx, (tab, form) in enumerate(zip(form_tab, FORM_QUESTIONS)):
                 json.dump(blog_data, f, indent=2)
             # Poll update (for establishments)
             if idx == 0 and responses.get("Which retail stores do you visit most often?"):
-                poll_data.append(responses["Which retail stores do you visit most often?"])
+                poll_data.append({
+                    "store": responses["Which retail stores do you visit most often?"],
+                    "age": age,
+                    "province": province,
+                    "city": city,
+                    "town": town
+                })
                 with open(POLL_PATH, "w") as f:
                     json.dump(poll_data, f, indent=2)
             st.success("Your response has been submitted and will appear in the blog!")
@@ -219,10 +263,15 @@ for entry in reversed(blog_data[-20:]):
 # --- POLL DISPLAY ---
 st.sidebar.subheader("Popular Retail Establishments (Poll)")
 if poll_data:
-    poll_counts = Counter(poll_data)
-    poll_df = pd.DataFrame(poll_counts.items(), columns=["Establishment", "Mentions"])
-    poll_df = poll_df.sort_values("Mentions", ascending=False)
-    st.sidebar.dataframe(poll_df, use_container_width=True)
+    # Only use dict entries with all required keys
+    poll_dicts = [p for p in poll_data if isinstance(p, dict) and all(k in p for k in ["store", "province", "city", "town", "age"])]
+    if poll_dicts:
+        poll_df = pd.DataFrame(poll_dicts)
+        agg = poll_df.groupby(["store", "province", "city", "town", "age"]).size().reset_index(name="Mentions")
+        agg = agg.sort_values("Mentions", ascending=False)
+        st.sidebar.dataframe(agg, use_container_width=True)
+    else:
+        st.sidebar.info("No new poll data yet. Please submit a form to see updated poll metrics.")
 else:
     st.sidebar.info("No poll data yet. Fill in the forms to see popular places!")
 
