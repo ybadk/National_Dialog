@@ -14,5 +14,12 @@
     "province": "Gauteng",
     "city": "Pretoria",
     "town": "Gauteng"
+  },
+  {
+    "store": "spar",
+    "age": 40,
+    "province": "Free state",
+    "city": "bloemfontein",
+    "town": "bloem"
   }
 ]
