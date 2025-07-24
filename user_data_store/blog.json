@@ -153,5 +153,24 @@
       "How important are sales and promotions to you?": "Very Important"
     },
     "timestamp": "2025-07-22T09:39:49.506627"
+  },
+  {
+    "user": {
+      "name": "Thapelo Thooe",
+      "phone": "0852658412",
+      "email": "kgothatsothooe@gmail.com"
+    },
+    "form": "Retail Experience",
+    "responses": {
+      "Age": 25,
+      "Province": "Gauteng",
+      "City": "Pretoria",
+      "Town": "pretoria",
+      "Which retail stores do you visit most often?": "jet",
+      "How satisfied are you with the cleanliness and security of these stores?": "Very Satisfied",
+      "What do you value most: price, quality, or convenience?": "Price",
+      "Any suggestions for improvement?": "variety, we dont all work in a office"
+    },
+    "timestamp": "2025-07-23T01:12:45.213428"
   }
 ]

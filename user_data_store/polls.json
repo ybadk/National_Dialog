@@ -21,5 +21,12 @@
     "province": "Free state",
     "city": "bloemfontein",
     "town": "bloem"
+  },
+  {
+    "store": "jet",
+    "age": 25,
+    "province": "Gauteng",
+    "city": "Pretoria",
+    "town": "pretoria"
   }
 ]
