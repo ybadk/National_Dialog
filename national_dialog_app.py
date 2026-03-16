@@ -240,8 +240,14 @@ def build_ad_showcase_html(ads):
         media_kind, media_uri = get_media_data_uri(ad.get("media"))
         if media_uri and media_kind == "video":
             media_markup = (
-                f'<div class="card-image-container"><video class="card-media" '
-                f'controls muted playsinline preload="metadata" src="{media_uri}"></video></div>'
+                f'<div class="card-image-container media-kind-video">'
+                f'<video class="card-media card-video-preview" muted playsinline preload="auto" '
+                f'onloadeddata="if(this.currentTime < 0.1) this.currentTime = 0.1;" src="{media_uri}"></video>'
+                f'<button class="card-play-overlay" type="button" '
+                f'onclick="const video=this.previousElementSibling; video.controls=true; video.muted=false; video.play(); this.style.opacity=0; this.style.pointerEvents=\'none\';">'
+                f'<span class="card-play-overlay-icon">▶</span><span>Play Ad</span></button>'
+                f'<div class="card-media-badge"><span class="card-media-badge-icon">▶</span>'
+                f'<span>Video Preview</span></div></div>'
             )
         elif media_uri:
             media_markup = (
@@ -325,12 +331,87 @@ def build_ad_showcase_html(ads):
           display: flex;
           align-items: center;
           justify-content: center;
+          position: relative;
         }}
 
         .card-media {{
           width: 100%;
           height: 100%;
           object-fit: cover;
+        }}
+
+        .card-video-preview {{
+          background: #0f172a;
+        }}
+
+        .card-image-container.media-kind-video::after {{
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to top, rgba(15, 23, 42, 0.68), rgba(15, 23, 42, 0.12));
+          pointer-events: none;
+        }}
+
+        .card-play-overlay {{
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 2;
+          border: none;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.92);
+          color: #0f172a;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 18px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+          transition: transform 0.2s ease, background 0.2s ease;
+        }}
+
+        .card-play-overlay:hover {{
+          transform: translate(-50%, -50%) scale(1.04);
+          background: #ffffff;
+        }}
+
+        .card-play-overlay-icon {{
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #008bf8;
+          color: #ffffff;
+          font-size: 12px;
+          line-height: 1;
+        }}
+
+        .card-media-badge {{
+          position: absolute;
+          left: 12px;
+          bottom: 12px;
+          z-index: 1;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          border-radius: 999px;
+          background: rgba(15, 23, 42, 0.84);
+          color: #ffffff;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+          pointer-events: none;
+        }}
+
+        .card-media-badge-icon {{
+          font-size: 12px;
+          line-height: 1;
         }}
 
         .video-icon {{
@@ -424,8 +505,16 @@ def build_blog_ad_card_html(ad):
     media_markup = ""
     if media_uri and media_kind == "video":
         media_markup = (
-            f'<div class="ad-media-wrap"><video class="ad-media" controls playsinline preload="metadata" '
-            f'src="{media_uri}"></video></div>'
+            f'<div class="ad-media-wrap ad-video-wrap">'
+            f'<div class="ad-video-toolbar"><span class="ad-video-chip">Video Ad</span>'
+            f'<span class="ad-video-note">Press play to preview this ad</span></div>'
+            f'<div class="ad-video-stage">'
+            f'<video class="ad-media ad-video-player" controls playsinline preload="auto" '
+            f'onloadeddata="if(this.currentTime < 0.1) this.currentTime = 0.1;" src="{media_uri}"></video>'
+            f'<button class="ad-video-overlay" type="button" '
+            f'onclick="const video=this.previousElementSibling; video.play(); this.style.opacity=0; this.style.pointerEvents=\'none\';">'
+            f'<span class="ad-video-overlay-icon">▶</span><span>Play Video Ad</span></button>'
+            f'</div></div>'
         )
     elif media_uri:
         media_markup = f'<div class="ad-media-wrap"><img class="ad-media" src="{media_uri}" alt="{title}"></div>'
@@ -500,10 +589,11 @@ def build_blog_ad_card_html(ad):
 
         .ad-media-wrap {{
           width: 100%;
-          height: 180px;
+          min-height: 180px;
           border-radius: 16px;
           overflow: hidden;
           background: #dbe4ff;
+          position: relative;
         }}
 
         .ad-media {{
@@ -511,6 +601,89 @@ def build_blog_ad_card_html(ad):
           height: 100%;
           object-fit: cover;
           display: block;
+        }}
+
+        .ad-video-wrap {{
+          min-height: 0;
+          background: #0f172a;
+        }}
+
+        .ad-video-toolbar {{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.7rem 0.9rem;
+          background: linear-gradient(90deg, #0f172a, #1d4ed8);
+          color: #ffffff;
+          font-size: 0.82rem;
+          flex-wrap: wrap;
+        }}
+
+        .ad-video-chip {{
+          display: inline-flex;
+          align-items: center;
+          padding: 0.22rem 0.7rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.15);
+          font-weight: 700;
+          letter-spacing: 0.02em;
+        }}
+
+        .ad-video-note {{
+          color: #dbeafe;
+          font-weight: 500;
+        }}
+
+        .ad-video-player {{
+          height: 220px;
+          background: #000000;
+        }}
+
+        .ad-video-stage {{
+          position: relative;
+          height: 220px;
+          overflow: hidden;
+          background: #000000;
+        }}
+
+        .ad-video-overlay {{
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 2;
+          border: none;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.96);
+          color: #0f172a;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 14px 20px;
+          font-size: 0.95rem;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
+          transition: transform 0.2s ease, background 0.2s ease;
+        }}
+
+        .ad-video-overlay:hover {{
+          transform: translate(-50%, -50%) scale(1.04);
+          background: #ffffff;
+        }}
+
+        .ad-video-overlay-icon {{
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background: #2563eb;
+          color: #ffffff;
+          font-size: 15px;
+          line-height: 1;
         }}
 
         .text-title {{
