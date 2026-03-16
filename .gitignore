@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Runtime uploads and local machine artifacts
+user_data_store/media/
+*.log
