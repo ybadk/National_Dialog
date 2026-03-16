@@ -61,6 +61,38 @@ GENDER_OPTIONS = [
     "Other",
 ]
 
+SERVICE_STAR_RATING_LABEL = "Rate the service using stars"
+STAR_RATING_OPTIONS = [1, 2, 3, 4, 5]
+
+
+def normalize_star_rating(value):
+    if value is None:
+        return 0
+    if isinstance(value, bool):
+        return 0
+    if isinstance(value, (int, float)):
+        return max(0, min(5, int(value)))
+
+    text = str(value).strip()
+    if not text:
+        return 0
+
+    if "★" in text:
+        return max(0, min(5, text.count("★")))
+
+    match = re.search(r"([1-5])", text)
+    if match:
+        return int(match.group(1))
+
+    return 0
+
+
+def format_star_rating_text(value):
+    rating = normalize_star_rating(value)
+    if rating <= 0:
+        return "☆☆☆☆☆"
+    return ("★" * rating) + ("☆" * (5 - rating))
+
 
 def apply_south_africa_theme():
     st.markdown(
@@ -236,6 +268,37 @@ def apply_south_africa_theme():
           border-color: rgba(0, 122, 77, 0.48) !important;
           background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(245, 255, 249, 0.98)) !important;
           box-shadow: 0 0 0 1px rgba(0, 122, 77, 0.08), 0 0 0 4px rgba(255, 182, 18, 0.18), 0 14px 26px rgba(0, 35, 149, 0.10) !important;
+        }
+
+        div[data-testid="stSegmentedControl"] {
+          margin: 0.2rem 0 0.75rem;
+        }
+
+        div[data-testid="stSegmentedControl"] [role="radiogroup"] {
+          gap: 0.45rem;
+          flex-wrap: wrap;
+        }
+
+        div[data-testid="stSegmentedControl"] button {
+          border-radius: 999px !important;
+          border: 1px solid rgba(17, 24, 39, 0.12) !important;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 235, 0.94)) !important;
+          color: var(--sa-black) !important;
+          font-weight: 700 !important;
+          transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, color 0.22s ease !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button:hover {
+          transform: translateY(-1px);
+          background: linear-gradient(90deg, rgba(206, 17, 38, 0.10), rgba(0, 35, 149, 0.10), rgba(0, 122, 77, 0.10), rgba(255, 182, 18, 0.16)) !important;
+          box-shadow: 0 10px 18px rgba(17, 24, 39, 0.10), 0 0 0 1px rgba(0, 35, 149, 0.08) !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button[aria-pressed="true"] {
+          background: var(--sa-flag-gradient) !important;
+          color: #ffffff !important;
+          border-color: rgba(17, 24, 39, 0.22) !important;
+          box-shadow: 0 12px 22px rgba(17, 24, 39, 0.14), 0 0 0 3px rgba(255, 182, 18, 0.18) !important;
         }
 
         .stButton > button,
@@ -1545,6 +1608,7 @@ def normalize_poll_entry(entry):
             "town": "Unknown Town",
             "age": "Unknown Age",
             "gender": "Not provided",
+            "star_rating": 0,
             "satisfaction": "Not provided",
             "decision_driver": "Not provided",
             "suggestion": "Not provided",
@@ -1561,6 +1625,12 @@ def normalize_poll_entry(entry):
     else:
         age_text = str(age_value)
 
+    star_rating_value = entry.get("star_rating")
+    if star_rating_value is None:
+        star_rating_value = entry.get("service_star_rating")
+    if star_rating_value is None:
+        star_rating_value = entry.get("rating")
+
     return {
         "store": format_store_name(entry.get("store"), "Unknown Store"),
         "province": format_location(entry.get("province"), "Unknown Province"),
@@ -1568,6 +1638,7 @@ def normalize_poll_entry(entry):
         "town": format_location(entry.get("town"), "Unknown Town"),
         "age": age_text,
         "gender": format_gender(entry.get("gender")),
+        "star_rating": normalize_star_rating(star_rating_value),
         "satisfaction": clean_text(entry.get("satisfaction"), "Not provided"),
         "decision_driver": clean_text(entry.get("decision_driver"), "Not provided"),
         "suggestion": clean_text(entry.get("suggestion"), "Not provided"),
@@ -1596,6 +1667,12 @@ def build_retail_poll_entries(blog_entries, saved_poll_entries):
         "Any suggestions for improvement?",
         "What one improvement would increase your spending or loyalty?",
     ]
+    rating_keys = [
+        SERVICE_STAR_RATING_LABEL,
+        "Rate the service using stars",
+        "Service star rating",
+        "Star rating",
+    ]
 
     for blog_entry in blog_entries:
         responses = blog_entry.get("responses", {})
@@ -1611,6 +1688,7 @@ def build_retail_poll_entries(blog_entries, saved_poll_entries):
                 "province": responses.get("Province"),
                 "city": responses.get("City"),
                 "town": responses.get("Town"),
+                "star_rating": get_first_response_value(responses, rating_keys),
                 "satisfaction": get_first_response_value(responses, satisfaction_keys),
                 "decision_driver": get_first_response_value(responses, driver_keys),
                 "suggestion": get_first_response_value(responses, suggestion_keys),
@@ -1673,6 +1751,21 @@ def build_poll_cards_html(rows):
         theme_index = (idx % 5) + 1
         retailer_url = get_retailer_url(row["store"])
         store_name = escape(row["store"])
+        star_rating = normalize_star_rating(row.get("star_rating"))
+        empty_star_class = " star-rating--empty" if star_rating == 0 else ""
+        star_icons = "".join(
+            f'<span class="star{" star--filled" if position <= star_rating else ""}">★</span>'
+            for position in range(1, 6)
+        )
+        star_rating_text = f"{star_rating}/5" if star_rating else "Not yet rated"
+        star_rating_markup = (
+            f'<div class="star-rating{empty_star_class}" '
+            f'aria-label="{escape(star_rating_text)}">'
+            '<span class="star-rating__label"><strong>Star rating:</strong></span>'
+            f'<span class="star-rating__icons">{star_icons}</span>'
+            f'<span class="star-rating__text">{escape(star_rating_text)}</span>'
+            '</div>'
+        )
         store_markup = store_name
         visit_link_markup = ""
         item_classes = f"item item--{theme_index}"
@@ -1701,12 +1794,13 @@ def build_poll_cards_html(rows):
               {icons[idx % len(icons)]}
               <span class="quantity">{store_markup}</span>
               <span class="metric-badge">Mentions: {escape(str(row.get("mention_count", 1)))}</span>
+              {star_rating_markup}
               {visit_link_markup}
               <span class="text text--{theme_index}">Age: {escape(str(row["age"]))} • Gender: {escape(row["gender"])}</span>
               <span class="meta"><strong>Province:</strong> {escape(row["province"])}</span>
               <span class="meta"><strong>City:</strong> {escape(row["city"])}</span>
               <span class="meta"><strong>Town:</strong> {escape(row["town"])}</span>
-              <span class="meta"><strong>Service rating:</strong> {escape(row["satisfaction"])}</span>
+              <span class="meta"><strong>Service feedback:</strong> {escape(row["satisfaction"])}</span>
               <span class="meta"><strong>Decision driver:</strong> {escape(row["decision_driver"])}</span>
               <span class="meta"><strong>Improvement requested:</strong> {escape(row["suggestion"])}</span>
               <span class="meta"><strong>Submitted:</strong> {escape(row["submitted_at"])}</span>
@@ -1872,6 +1966,51 @@ def build_poll_cards_html(rows):
           font-size: 11px;
           font-weight: 700;
           border: 1px solid rgba(255,255,255,0.22);
+        }}
+
+        .star-rating {{
+          margin-top: 8px;
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          line-height: 1.4;
+        }}
+
+        .star-rating__label {{
+          font-size: 11px;
+        }}
+
+        .star-rating__icons {{
+          display: inline-flex;
+          gap: 1px;
+        }}
+
+        .star {{
+          color: rgba(255, 255, 255, 0.38);
+          font-size: 15px;
+          text-shadow: 0 1px 3px rgba(17, 24, 39, 0.16);
+        }}
+
+        .item--4 .star {{
+          color: rgba(17, 24, 39, 0.24);
+        }}
+
+        .star--filled {{
+          color: #ffec8b;
+        }}
+
+        .item--4 .star--filled {{
+          color: #111827;
+        }}
+
+        .star-rating__text {{
+          font-weight: 700;
+        }}
+
+        .star-rating--empty .star-rating__text {{
+          opacity: 0.9;
         }}
 
         .visit-link {{
@@ -2311,11 +2450,22 @@ for idx, (tab, form) in enumerate(zip(form_tab, FORM_QUESTIONS)):
             province = st.text_input("Province", key=f"province_{idx}")
             city = st.text_input("City", key=f"city_{idx}")
             town = st.text_input("Town", key=f"town_{idx}")
+            service_rating = st.segmented_control(
+                SERVICE_STAR_RATING_LABEL,
+                STAR_RATING_OPTIONS,
+                selection_mode="single",
+                default=None,
+                format_func=format_star_rating_text,
+                key=f"service_rating_{idx}",
+                help="Required: choose a star rating before you submit this form.",
+            )
             responses["Gender"] = gender
             responses["Age"] = age
             responses["Province"] = province
             responses["City"] = city
             responses["Town"] = town
+            if service_rating is not None:
+                responses[SERVICE_STAR_RATING_LABEL] = format_star_rating_text(service_rating)
             for q_idx, (q, qtype, *opts) in enumerate(form["questions"]):
                 if qtype == "text":
                     responses[q] = st.text_input(q, key=f"q_{idx}_{q_idx}")
@@ -2327,41 +2477,45 @@ for idx, (tab, form) in enumerate(zip(form_tab, FORM_QUESTIONS)):
                     responses[q] = st.file_uploader(q, type=["jpg", "jpeg", "png", "mp4", "mov"], key=f"q_{idx}_{q_idx}")
             submit = st.form_submit_button("Submit")
         if submit:
-            serialized_responses = {
-                question: serialize_response_value(answer)
-                for question, answer in responses.items()
-            }
-            entry = {
-                "user": st.session_state["user"],
-                "form": form["title"],
-                "responses": serialized_responses,
-                "timestamp": datetime.now().isoformat()
-            }
-            # Save to blog
-            blog_data.append(entry)
-            save_json_list(BLOG_PATH, blog_data)
-            # Poll update (for establishments)
-            poll_fields = form.get("poll_fields")
-            if poll_fields and responses.get(poll_fields["store"]):
-                poll_data.append({
-                    "store": responses[poll_fields["store"]],
-                    "age": age,
-                    "gender": gender,
-                    "province": province,
-                    "city": city,
-                    "town": town,
-                    "satisfaction": responses.get(poll_fields["satisfaction"]),
-                    "decision_driver": responses.get(poll_fields["decision_driver"]),
-                    "suggestion": responses.get(poll_fields["suggestion"]),
-                    "submitted_at": entry["timestamp"],
-                })
-                save_json_list(POLL_PATH, poll_data)
-            show_submission_notification(
-                "Thank You",
-                "your response was submitted",
-            )
-            st.session_state["blog_feed_loader_pending"] = True
-            st.rerun()
+            if service_rating is None:
+                st.warning("Please choose a star rating before submitting this form.")
+            else:
+                serialized_responses = {
+                    question: serialize_response_value(answer)
+                    for question, answer in responses.items()
+                }
+                entry = {
+                    "user": st.session_state["user"],
+                    "form": form["title"],
+                    "responses": serialized_responses,
+                    "timestamp": datetime.now().isoformat()
+                }
+                # Save to blog
+                blog_data.append(entry)
+                save_json_list(BLOG_PATH, blog_data)
+                # Poll update (for establishments)
+                poll_fields = form.get("poll_fields")
+                if poll_fields and responses.get(poll_fields["store"]):
+                    poll_data.append({
+                        "store": responses[poll_fields["store"]],
+                        "age": age,
+                        "gender": gender,
+                        "province": province,
+                        "city": city,
+                        "town": town,
+                        "star_rating": service_rating,
+                        "satisfaction": responses.get(poll_fields["satisfaction"]),
+                        "decision_driver": responses.get(poll_fields["decision_driver"]),
+                        "suggestion": responses.get(poll_fields["suggestion"]),
+                        "submitted_at": entry["timestamp"],
+                    })
+                    save_json_list(POLL_PATH, poll_data)
+                show_submission_notification(
+                    "Thank You",
+                    "your response was submitted",
+                )
+                st.session_state["blog_feed_loader_pending"] = True
+                st.rerun()
 
 # --- BLOG DISPLAY ---
 st.markdown("---")
