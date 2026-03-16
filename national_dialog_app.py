@@ -66,6 +66,15 @@ def apply_south_africa_theme():
     st.markdown(
         """
         <style>
+        :root {
+          --sa-red: #ce1126;
+          --sa-blue: #002395;
+          --sa-green: #007a4d;
+          --sa-gold: #ffb612;
+          --sa-black: #111827;
+          --sa-flag-gradient: linear-gradient(90deg, #111827 0%, #ce1126 22%, #002395 48%, #007a4d 74%, #ffb612 100%);
+        }
+
         .stApp {
           background:
             radial-gradient(circle at top left, rgba(206, 17, 38, 0.10), transparent 28%),
@@ -92,7 +101,7 @@ def apply_south_africa_theme():
           color: rgba(248, 250, 252, 0.82);
         }
 
-        h1, h2, h3 {
+        h1, h2, h3, h4 {
           color: #111827;
           letter-spacing: -0.02em;
         }
@@ -120,6 +129,11 @@ def apply_south_africa_theme():
           background: linear-gradient(90deg, #111827 0%, #ce1126 24%, #002395 50%, #007a4d 76%, #ffb612 100%);
         }
 
+        h4 {
+          color: var(--sa-blue);
+          font-weight: 800;
+        }
+
         hr {
           border-top: 2px solid rgba(17, 24, 39, 0.08);
           background-image: linear-gradient(90deg, #111827 0%, #ce1126 20%, #002395 45%, #007a4d 70%, #ffb612 100%);
@@ -137,6 +151,14 @@ def apply_south_africa_theme():
           border-radius: 14px 14px 0 0;
           padding: 10px 14px;
           box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+          transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, color 0.25s ease;
+        }
+
+        [data-baseweb="tab"]:hover {
+          background: linear-gradient(90deg, rgba(206, 17, 38, 0.12) 0%, rgba(0, 35, 149, 0.12) 35%, rgba(0, 122, 77, 0.12) 70%, rgba(255, 182, 18, 0.18) 100%);
+          color: #111827 !important;
+          transform: translateY(-1px);
+          box-shadow: 0 12px 20px rgba(15, 23, 42, 0.08);
         }
 
         [data-baseweb="tab"][aria-selected="true"] {
@@ -152,6 +174,68 @@ def apply_south_africa_theme():
           border-radius: 20px;
           padding: 1rem 1rem 0.75rem;
           box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+          transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+        }
+
+        div[data-testid="stForm"]:hover,
+        div[data-testid="stForm"]:focus-within {
+          transform: translateY(-2px);
+          border-color: rgba(0, 122, 77, 0.24);
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 235, 0.98), rgba(255, 245, 214, 0.94));
+          box-shadow: 0 18px 34px rgba(17, 24, 39, 0.12), 0 12px 24px rgba(0, 35, 149, 0.08), 0 10px 22px rgba(0, 122, 77, 0.08);
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"] {
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.98));
+          border: 1px solid rgba(17, 24, 39, 0.08);
+          border-top: 4px solid var(--sa-blue);
+          border-radius: 18px;
+          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+          transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, border-top-color 0.22s ease;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"]:hover,
+        div[data-testid="stVerticalBlockBorderWrapper"]:focus-within {
+          transform: translateY(-2px);
+          border-color: rgba(206, 17, 38, 0.18);
+          border-top-color: var(--sa-green);
+          box-shadow: 0 18px 32px rgba(17, 24, 39, 0.12), 0 10px 22px rgba(206, 17, 38, 0.08), 0 10px 22px rgba(255, 182, 18, 0.10);
+        }
+
+        div[data-testid="stTextInput"] > div > div,
+        div[data-testid="stNumberInput"] > div > div,
+        div[data-testid="stTextArea"] > div > div,
+        div[data-testid="stSelectbox"] [data-baseweb="select"] > div,
+        section[data-testid="stFileUploaderDropzone"],
+        div[data-testid="stFileUploaderDropzone"] {
+          border-radius: 14px !important;
+          border: 1px solid rgba(17, 24, 39, 0.12) !important;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95)) !important;
+          transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease !important;
+        }
+
+        div[data-testid="stTextInput"] > div > div:hover,
+        div[data-testid="stNumberInput"] > div > div:hover,
+        div[data-testid="stTextArea"] > div > div:hover,
+        div[data-testid="stSelectbox"] [data-baseweb="select"] > div:hover,
+        section[data-testid="stFileUploaderDropzone"]:hover,
+        div[data-testid="stFileUploaderDropzone"]:hover {
+          transform: translateY(-1px);
+          border-color: rgba(206, 17, 38, 0.30) !important;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(255, 248, 235, 0.96), rgba(255, 245, 214, 0.92)) !important;
+          box-shadow: 0 0 0 1px rgba(206, 17, 38, 0.05), 0 0 0 4px rgba(0, 35, 149, 0.06), 0 12px 24px rgba(0, 122, 77, 0.08) !important;
+        }
+
+        div[data-testid="stTextInput"] > div > div:focus-within,
+        div[data-testid="stNumberInput"] > div > div:focus-within,
+        div[data-testid="stTextArea"] > div > div:focus-within,
+        div[data-testid="stSelectbox"] [data-baseweb="select"] > div:focus-within,
+        div[data-testid="stSelectbox"]:focus-within [data-baseweb="select"] > div,
+        section[data-testid="stFileUploaderDropzone"]:focus-within,
+        div[data-testid="stFileUploaderDropzone"]:focus-within {
+          border-color: rgba(0, 122, 77, 0.48) !important;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(245, 255, 249, 0.98)) !important;
+          box-shadow: 0 0 0 1px rgba(0, 122, 77, 0.08), 0 0 0 4px rgba(255, 182, 18, 0.18), 0 14px 26px rgba(0, 35, 149, 0.10) !important;
         }
 
         .stButton > button,
@@ -162,16 +246,127 @@ def apply_south_africa_theme():
           color: #ffffff;
           font-weight: 700;
           box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+          transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, filter 0.22s ease;
         }
 
         .stButton > button:hover,
         div[data-testid="stForm"] button:hover {
-          filter: brightness(1.03);
+          background: var(--sa-flag-gradient);
+          box-shadow: 0 16px 30px rgba(17, 24, 39, 0.18), 0 10px 24px rgba(0, 35, 149, 0.12), 0 8px 18px rgba(0, 122, 77, 0.10);
+          filter: saturate(1.08);
+          transform: translateY(-2px);
+        }
+
+        a:hover {
+          color: var(--sa-blue);
+        }
+
+        [data-testid="stSidebar"] a:hover {
+          color: var(--sa-gold);
+        }
+
+        div[data-testid="stAlert"],
+        div[role="alert"] {
+          border-radius: 18px;
+          border: 1px solid rgba(17, 24, 39, 0.10);
+          border-left: 6px solid var(--sa-blue);
+          background: linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.98) 52%, rgba(245, 255, 249, 0.98) 100%);
+          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+          transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+
+        div[data-testid="stAlert"]:hover,
+        div[role="alert"]:hover {
           transform: translateY(-1px);
+          border-color: rgba(0, 122, 77, 0.20);
+          box-shadow: 0 16px 28px rgba(17, 24, 39, 0.10), 0 8px 20px rgba(0, 35, 149, 0.08);
+        }
+
+        div[data-testid="stNotification"],
+        div[data-testid="stAlertContainer"] {
+          border-radius: 18px;
+        }
+
+        .sa-empty-state {
+          margin: 0.35rem 0 0.8rem;
+          padding: 1rem 1.1rem;
+          border-radius: 20px;
+          border: 1px solid rgba(17, 24, 39, 0.10);
+          border-left: 6px solid var(--sa-red);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 48%, rgba(245, 255, 249, 0.96) 100%);
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .sa-empty-state__badge {
+          display: inline-block;
+          margin-bottom: 0.55rem;
+          padding: 0.3rem 0.7rem;
+          border-radius: 999px;
+          background: var(--sa-flag-gradient);
+          color: #ffffff;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .sa-empty-state__text {
+          color: #1f2937;
+          font-weight: 600;
+          line-height: 1.5;
+        }
+
+        .sa-empty-state--sidebar {
+          border-color: rgba(255, 255, 255, 0.16);
+          border-left-color: var(--sa-gold);
+          background: linear-gradient(135deg, rgba(17, 24, 39, 0.94) 0%, rgba(0, 35, 149, 0.92) 42%, rgba(0, 122, 77, 0.90) 100%);
+          box-shadow: 0 16px 28px rgba(0, 0, 0, 0.22);
+        }
+
+        .sa-empty-state--sidebar .sa-empty-state__text {
+          color: #f8fafc;
+        }
+
+        .sa-footer {
+          margin: 1.4rem auto 0.25rem;
+          padding: 1rem 1.2rem;
+          max-width: 920px;
+          border-radius: 20px;
+          border: 1px solid rgba(17, 24, 39, 0.10);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 50%, rgba(255, 248, 235, 0.98) 100%);
+          box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+          text-align: center;
+          color: #1f2937;
+          font-size: 0.95rem;
+          line-height: 1.7;
+        }
+
+        .sa-footer strong {
+          color: var(--sa-black);
+        }
+
+        .sa-footer a {
+          color: var(--sa-blue);
+          font-weight: 700;
+          text-decoration: none;
+        }
+
+        .sa-footer a:hover {
+          color: var(--sa-red);
         }
 
         .stCaption {
           color: #475569;
+          font-weight: 500;
+        }
+
+        p, label {
+          color: #1f2937;
+        }
+
+        [data-testid="stSidebar"] p,
+        [data-testid="stSidebar"] label {
+          color: #f8fafc;
         }
         </style>
         """,
@@ -182,6 +377,14 @@ def apply_south_africa_theme():
 def is_valid_sa_phone(phone):
     # Accepts 0[6-8]XXXXXXXX or +27[6-8]XXXXXXXX
     return bool(re.fullmatch(r"(0[6-8][0-9]{8}|\+27[6-8][0-9]{8})", phone))
+
+
+def render_empty_state(message, sidebar=False):
+    classes = "sa-empty-state sa-empty-state--sidebar" if sidebar else "sa-empty-state"
+    st.markdown(
+        f"<div class='{classes}'><div class='sa-empty-state__badge'>South Africa</div><div class='sa-empty-state__text'>{escape(message)}</div></div>",
+        unsafe_allow_html=True,
+    )
 
 
 def is_valid_email(email):
@@ -459,15 +662,16 @@ def build_ad_showcase_html(ads):
 
         .card:hover {{
           transform: translateY(-10px);
-          box-shadow: 0px 20px 24px rgba(15, 23, 42, 0.14),
+          background: linear-gradient(180deg, var(--card-hover-soft), #ffffff);
+          box-shadow: 0px 22px 28px var(--card-hover-shadow),
             -4px -4px 12px rgba(15, 23, 42, 0.06);
         }}
 
-        .theme-1 {{ --card-accent: #ce1126; --card-accent-soft: #ef4444; --card-soft: #fff1f2; --card-text: #43121a; --card-button-text: #ffffff; }}
-        .theme-2 {{ --card-accent: #002395; --card-accent-soft: #2563eb; --card-soft: #eff6ff; --card-text: #13233f; --card-button-text: #ffffff; }}
-        .theme-3 {{ --card-accent: #007a4d; --card-accent-soft: #16a34a; --card-soft: #f0fdf4; --card-text: #113126; --card-button-text: #ffffff; }}
-        .theme-4 {{ --card-accent: #d39b00; --card-accent-soft: #ffb612; --card-soft: #fff8e1; --card-text: #483100; --card-button-text: #111827; }}
-        .theme-5 {{ --card-accent: #111827; --card-accent-soft: #374151; --card-soft: #f3f4f6; --card-text: #111827; --card-button-text: #ffffff; }}
+        .theme-1 {{ --card-accent: #ce1126; --card-accent-soft: #ef4444; --card-soft: #fff1f2; --card-hover-soft: #ffe4e6; --card-text: #43121a; --card-button-text: #ffffff; --card-hover-shadow: rgba(206, 17, 38, 0.22); }}
+        .theme-2 {{ --card-accent: #002395; --card-accent-soft: #2563eb; --card-soft: #eff6ff; --card-hover-soft: #dbeafe; --card-text: #13233f; --card-button-text: #ffffff; --card-hover-shadow: rgba(0, 35, 149, 0.20); }}
+        .theme-3 {{ --card-accent: #007a4d; --card-accent-soft: #16a34a; --card-soft: #f0fdf4; --card-hover-soft: #dcfce7; --card-text: #113126; --card-button-text: #ffffff; --card-hover-shadow: rgba(0, 122, 77, 0.20); }}
+        .theme-4 {{ --card-accent: #d39b00; --card-accent-soft: #ffb612; --card-soft: #fff8e1; --card-hover-soft: #fef3c7; --card-text: #483100; --card-button-text: #111827; --card-hover-shadow: rgba(255, 182, 18, 0.22); }}
+        .theme-5 {{ --card-accent: #111827; --card-accent-soft: #374151; --card-soft: #f3f4f6; --card-hover-soft: #e5e7eb; --card-text: #111827; --card-button-text: #ffffff; --card-hover-shadow: rgba(17, 24, 39, 0.24); }}
 
         .card-image-container {{
           width: 100%;
@@ -524,7 +728,8 @@ def build_ad_showcase_html(ads):
 
         .card-play-overlay:hover {{
           transform: translate(-50%, -50%) scale(1.04);
-          background: #ffffff;
+          background: linear-gradient(90deg, #111827 0%, var(--card-accent) 58%, var(--card-accent-soft) 100%);
+          color: var(--card-button-text);
         }}
 
         .card-play-overlay-icon {{
@@ -616,6 +821,8 @@ def build_ad_showcase_html(ads):
           width: 100%;
           gap: 10px;
           padding: 0;
+          background: linear-gradient(90deg, #111827 0%, var(--card-accent) 58%, var(--card-accent-soft) 100%);
+          box-shadow: 0 14px 26px var(--card-hover-shadow);
         }}
 
         .play-icon {{
@@ -825,12 +1032,19 @@ def build_blog_ad_card_html(ad):
           font-weight: 700;
           cursor: pointer;
           box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
-          transition: transform 0.2s ease, background 0.2s ease;
+          transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
         }}
 
         .ad-video-overlay:hover {{
           transform: translate(-50%, -50%) scale(1.04);
-          background: #ffffff;
+          background: linear-gradient(90deg, #111827 0%, #ce1126 24%, #002395 50%, #007a4d 76%, #ffb612 100%);
+          color: #ffffff;
+          box-shadow: 0 16px 32px rgba(17, 24, 39, 0.28), 0 10px 24px rgba(0, 35, 149, 0.16);
+        }}
+
+        .ad-video-overlay:hover .ad-video-overlay-icon {{
+          background: rgba(255, 255, 255, 0.18);
+          color: #ffffff;
         }}
 
         .ad-video-overlay-icon {{
@@ -889,20 +1103,28 @@ def build_blog_ad_card_html(ad):
           left: 50%;
           bottom: 0;
           opacity: 0;
-          transition: 0.3s ease-out;
+          transition: transform 0.3s ease-out, opacity 0.3s ease-out, background 0.2s ease, box-shadow 0.2s ease;
           text-decoration: none;
           text-align: center;
           box-sizing: border-box;
         }}
 
         .card:hover {{
-          border-color: rgba(0, 122, 77, 0.35);
-          box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+          border-color: rgba(206, 17, 38, 0.24);
+          box-shadow: 0 18px 34px rgba(17, 24, 39, 0.15),
+            0 18px 28px rgba(0, 35, 149, 0.10),
+            0 12px 22px rgba(0, 122, 77, 0.08),
+            0 8px 18px rgba(255, 182, 18, 0.08);
         }}
 
         .card:hover .card-button {{
           transform: translate(-50%, 50%);
           opacity: 1;
+        }}
+
+        .card-button:hover {{
+          background: linear-gradient(90deg, #111827 0%, #ce1126 24%, #002395 50%, #007a4d 76%, #ffb612 100%);
+          box-shadow: 0 14px 28px rgba(17, 24, 39, 0.20), 0 10px 20px rgba(0, 35, 149, 0.12);
         }}
 
         .card-button:disabled {{
@@ -1072,6 +1294,7 @@ def build_blog_post_card_html(entry):
               border-radius: 14px;
               background: #f8fafc;
               border-left: 4px solid transparent;
+              transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
             }}
 
             .response-item--1 {{ background: linear-gradient(90deg, #fff1f2 0%, #ffffff 100%); border-left-color: #ce1126; }}
@@ -1079,6 +1302,12 @@ def build_blog_post_card_html(entry):
             .response-item--3 {{ background: linear-gradient(90deg, #f0fdf4 0%, #ffffff 100%); border-left-color: #007a4d; }}
             .response-item--4 {{ background: linear-gradient(90deg, #fff8e1 0%, #ffffff 100%); border-left-color: #ffb612; }}
             .response-item--5 {{ background: linear-gradient(90deg, #f3f4f6 0%, #ffffff 100%); border-left-color: #111827; }}
+
+            .response-item--1:hover {{ background: linear-gradient(90deg, #ffe4e6 0%, #fff1f2 100%); box-shadow: 0 10px 18px rgba(206, 17, 38, 0.10); transform: translateX(2px); }}
+            .response-item--2:hover {{ background: linear-gradient(90deg, #dbeafe 0%, #eff6ff 100%); box-shadow: 0 10px 18px rgba(0, 35, 149, 0.10); transform: translateX(2px); }}
+            .response-item--3:hover {{ background: linear-gradient(90deg, #dcfce7 0%, #f0fdf4 100%); box-shadow: 0 10px 18px rgba(0, 122, 77, 0.10); transform: translateX(2px); }}
+            .response-item--4:hover {{ background: linear-gradient(90deg, #fef3c7 0%, #fff8e1 100%); box-shadow: 0 10px 18px rgba(255, 182, 18, 0.12); transform: translateX(2px); }}
+            .response-item--5:hover {{ background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 100%); box-shadow: 0 10px 18px rgba(17, 24, 39, 0.12); transform: translateX(2px); }}
 
             .label {{
               font-size: 11px;
@@ -1109,6 +1338,12 @@ def build_blog_post_card_html(entry):
               border-radius: 16px;
               padding: 14px;
               border: 1px solid rgba(17, 24, 39, 0.08);
+              transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }}
+
+            .media-card:hover {{
+              transform: translateY(-2px);
+              box-shadow: 0 14px 24px rgba(0, 35, 149, 0.08), 0 10px 18px rgba(0, 122, 77, 0.08), 0 6px 14px rgba(255, 182, 18, 0.10);
             }}
 
             .media-label {{
@@ -1172,11 +1407,12 @@ def build_blog_post_card_html(entry):
 
 def build_sidebar_link_buttons_html(links):
     buttons = []
-    for link in links:
+    for idx, link in enumerate(links):
+        theme_index = (idx % 5) + 1
         buttons.append(
             f'''
-            <a class="sidebar-link" href="{escape(link["url"], quote=True)}" target="_blank" rel="noopener noreferrer">
-              <button>{escape(link["label"])}</button>
+            <a class="sidebar-link theme-{theme_index}" href="{escape(link["url"], quote=True)}" target="_blank" rel="noopener noreferrer">
+              <button type="button">{escape(link["label"])}</button>
             </a>
             '''
         )
@@ -1206,28 +1442,37 @@ def build_sidebar_link_buttons_html(links):
           display: block;
         }}
 
+        .theme-1 {{ --hover-main: #ce1126; --hover-soft: #ef4444; --hover-text: #ffffff; }}
+        .theme-2 {{ --hover-main: #002395; --hover-soft: #2563eb; --hover-text: #ffffff; }}
+        .theme-3 {{ --hover-main: #007a4d; --hover-soft: #16a34a; --hover-text: #ffffff; }}
+        .theme-4 {{ --hover-main: #ffb612; --hover-soft: #f59e0b; --hover-text: #111827; }}
+        .theme-5 {{ --hover-main: #111827; --hover-soft: #374151; --hover-text: #ffffff; }}
+
         button {{
-          background-color: #eee;
-          border: none;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.96));
+          border: 1px solid rgba(255, 255, 255, 0.18);
           padding: 1rem;
           font-size: 1rem;
           width: 100%;
           border-radius: 1rem;
-          color: lightcoral;
-          box-shadow: 0 0.4rem #dfd9d9;
+          color: #111827;
+          box-shadow: 0 0.4rem rgba(148, 163, 184, 0.45);
           cursor: pointer;
+          font-weight: 700;
+          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
         }}
 
         button:active {{
           color: white;
-          box-shadow: 0 0.2rem #dfd9d9;
+          box-shadow: 0 0.2rem rgba(148, 163, 184, 0.45);
           transform: translateY(0.2rem);
         }}
 
-        button:hover {{
-          background: lightcoral;
-          color: white;
-          text-shadow: 0 0.1rem #bcb4b4;
+        .sidebar-link:hover button {{
+          background: linear-gradient(90deg, #111827 0%, var(--hover-main) 56%, var(--hover-soft) 100%);
+          color: var(--hover-text);
+          box-shadow: 0 0.55rem 1rem rgba(17, 24, 39, 0.28);
+          transform: translateY(-2px);
         }}
       </style>
     </html>
@@ -1430,21 +1675,29 @@ def build_poll_cards_html(rows):
         store_name = escape(row["store"])
         store_markup = store_name
         visit_link_markup = ""
+        item_classes = f"item item--{theme_index}"
+        item_interaction_attrs = ""
 
         if retailer_url:
             safe_url = escape(retailer_url, quote=True)
+            item_classes += " clickable"
+            item_interaction_attrs = (
+                f' role="link" tabindex="0" '
+                f'onclick="window.open(\'{safe_url}\', \'_blank\', \'noopener,noreferrer\');" '
+                f'onkeydown="if(event.key===\'Enter\' || event.key===\' \'){{event.preventDefault();window.open(\'{safe_url}\', \'_blank\', \'noopener,noreferrer\');}}"'
+            )
             store_markup = (
-                f'<a class="store-link" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
+                f'<a class="store-link" href="{safe_url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();">'
                 f'{store_name} <span class="store-link__icon">↗</span></a>'
             )
             visit_link_markup = (
-                f'<a class="visit-link" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
+                f'<a class="visit-link" href="{safe_url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();">'
                 'Visit official site</a>'
             )
 
         items.append(
             f'''
-            <div class="item item--{theme_index}">
+            <div class="{item_classes}"{item_interaction_attrs}>
               {icons[idx % len(icons)]}
               <span class="quantity">{store_markup}</span>
               <span class="metric-badge">Mentions: {escape(str(row.get("mention_count", 1)))}</span>
@@ -1500,6 +1753,7 @@ def build_poll_cards_html(rows):
           border-left: 6px solid rgba(255, 255, 255, 0.95);
           box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
           overflow: hidden;
+          transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
         }}
 
         .card .item::before {{
@@ -1510,10 +1764,15 @@ def build_poll_cards_html(rows):
           pointer-events: none;
         }}
 
-        .item:hover {{
-          transform: translateY(-2px) scale(0.992);
-          transition: all 0.3s;
+        .item:hover,
+        .item.clickable:focus-visible {{
+          transform: translateY(-4px) scale(1.01);
+          box-shadow: 0 20px 34px var(--item-hover-shadow);
+          filter: saturate(1.04);
+          outline: none;
         }}
+
+        .item.clickable {{ cursor: pointer; }}
 
         .item svg {{
           width: 34px;
@@ -1529,26 +1788,56 @@ def build_poll_cards_html(rows):
         .item--1 {{
           background: linear-gradient(135deg, #ce1126 0%, #ef4444 100%);
           color: #fff8eb;
+          --item-hover-shadow: rgba(206, 17, 38, 0.34);
+          --store-hover-color: #fff1b5;
+          --visit-bg: rgba(255, 248, 235, 0.96);
+          --visit-text: #7f1d1d;
+          --visit-hover-bg: #111827;
+          --visit-hover-text: #fff8eb;
         }}
 
         .item--2 {{
           background: linear-gradient(135deg, #002395 0%, #2563eb 100%);
           color: #eff6ff;
+          --item-hover-shadow: rgba(0, 35, 149, 0.30);
+          --store-hover-color: #bfdbfe;
+          --visit-bg: rgba(239, 246, 255, 0.96);
+          --visit-text: #002395;
+          --visit-hover-bg: #ffb612;
+          --visit-hover-text: #111827;
         }}
 
         .item--3 {{
           background: linear-gradient(135deg, #007a4d 0%, #16a34a 100%);
           color: #f0fdf4;
+          --item-hover-shadow: rgba(0, 122, 77, 0.30);
+          --store-hover-color: #dcfce7;
+          --visit-bg: rgba(240, 253, 244, 0.96);
+          --visit-text: #065f46;
+          --visit-hover-bg: #002395;
+          --visit-hover-text: #ffffff;
         }}
 
         .item--4 {{
           background: linear-gradient(135deg, #ffb612 0%, #f59e0b 100%);
           color: #1f2937;
+          --item-hover-shadow: rgba(255, 182, 18, 0.32);
+          --store-hover-color: #002395;
+          --visit-bg: rgba(17, 24, 39, 0.92);
+          --visit-text: #fff8eb;
+          --visit-hover-bg: #ce1126;
+          --visit-hover-text: #ffffff;
         }}
 
         .item--5 {{
           background: linear-gradient(135deg, #111827 0%, #000000 100%);
           color: #f8fafc;
+          --item-hover-shadow: rgba(17, 24, 39, 0.36);
+          --store-hover-color: #ffdd57;
+          --visit-bg: rgba(255, 182, 18, 0.94);
+          --visit-text: #111827;
+          --visit-hover-bg: #007a4d;
+          --visit-hover-text: #ffffff;
         }}
 
         .quantity {{
@@ -1566,7 +1855,8 @@ def build_poll_cards_html(rows):
         }}
 
         .store-link:hover {{
-          opacity: 0.9;
+          opacity: 1;
+          color: var(--store-hover-color);
         }}
 
         .store-link__icon {{
@@ -1591,11 +1881,19 @@ def build_poll_cards_html(rows):
           gap: 6px;
           padding: 5px 10px;
           border-radius: 999px;
-          background: rgba(255,255,255,0.92);
-          color: #111827;
+          background: var(--visit-bg);
+          color: var(--visit-text);
           text-decoration: none;
           font-size: 11px;
           font-weight: 700;
+          transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }}
+
+        .visit-link:hover {{
+          background: var(--visit-hover-bg);
+          color: var(--visit-hover-text);
+          transform: translateY(-1px);
+          box-shadow: 0 10px 18px rgba(17, 24, 39, 0.18);
         }}
 
         .text {{
@@ -1635,17 +1933,19 @@ def show_transition_loader(title, message, duration_seconds=1):
     .loader {
       width: 200px;
       height: 10px;
-      background: #004643;
+      background: linear-gradient(90deg, rgba(17, 24, 39, 0.98) 0%, rgba(0, 35, 149, 0.90) 100%);
       border-radius: 50px;
       overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 10px 18px rgba(15, 23, 42, 0.12);
     }
 
     .inner_loader {
       width: 60%;
       height: 100%;
-      background: #f9bc60;
+      background: linear-gradient(90deg, #ce1126 0%, #002395 38%, #007a4d 70%, #ffb612 100%);
       border-radius: 50px;
       animation: moveLeftRight 3s ease-in-out infinite;
+      box-shadow: 0 0 14px rgba(255, 182, 18, 0.35);
     }
 
     @keyframes moveLeftRight {
@@ -1705,13 +2005,14 @@ def show_submission_notification(title="Congratulations", subtitle="your respons
         height: 12rem;
         width: min(20rem, 96vw);
         border-radius: 1rem;
-        background: radial-gradient(circle, rgba(63, 94, 251, 1) 0%, rgba(252, 70, 223, 1) 100%);
-        border: 1px solid #e8e8e8;
+        background: linear-gradient(135deg, #111827 0%, #002395 28%, #007a4d 62%, #ffb612 82%, #ce1126 100%);
+        border: 1px solid rgba(255, 255, 255, 0.35);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-end;
         box-sizing: border-box;
+        box-shadow: 0 22px 40px rgba(17, 24, 39, 0.18), 0 12px 24px rgba(0, 35, 149, 0.14);
       }}
 
       .text-1 {{
@@ -1730,7 +2031,8 @@ def show_submission_notification(title="Congratulations", subtitle="your respons
         padding: 0 12px 1.8rem;
         font-family: fantasy;
         font-size: 20px;
-        color: #fff;
+        color: #f8fafc;
+        text-shadow: 0 2px 10px rgba(17, 24, 39, 0.35);
         text-align: center;
         line-height: 1.2;
       }}
@@ -1991,7 +2293,7 @@ with ad_preview_col:
         for ad in reversed(ads_data[-6:]):
             render_ad_card(ad)
     else:
-        st.info("No ads yet. Use the form to publish the first ad.")
+        render_empty_state("No ads yet. Use the form to publish the first ad.")
 
 st.markdown("---")
 
@@ -2098,7 +2400,7 @@ else:
             st.markdown(f'<div id="blog-ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
             components.html(build_blog_ad_card_html(ad), height=500, scrolling=False)
     else:
-        st.info("No public responses yet. Submit a form to start the conversation.")
+        render_empty_state("No public responses yet. Submit a form to start the conversation.")
 
 # --- POLL DISPLAY ---
 st.sidebar.subheader("Popular Retail Establishments (Poll)")
@@ -2112,7 +2414,11 @@ if retail_poll_entries:
             scrolling=True,
         )
 else:
-    st.sidebar.info("No poll data yet. Fill in the forms to see popular places!")
+    with st.sidebar:
+        render_empty_state("No poll data yet. Fill in the forms to see popular places!", sidebar=True)
 
 # --- FOOTER ---
-st.markdown("<center>Developed by Thapelo Kgothatso Thooe | kgothatsothooe@gmail.com | github.com/ybadk</center>", unsafe_allow_html=True)
+st.markdown(
+    "<div class='sa-footer'>Developed by <strong>Thapelo Kgothatso Thooe</strong> &nbsp;|&nbsp; <a href='mailto:kgothatsothooe@gmail.com'>kgothatsothooe@gmail.com</a> &nbsp;|&nbsp; <a href='https://github.com/ybadk' target='_blank'>github.com/ybadk</a></div>",
+    unsafe_allow_html=True,
+)
