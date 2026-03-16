@@ -28,5 +28,16 @@
     "province": "Gauteng",
     "city": "Pretoria",
     "town": "pretoria"
+  },
+  {
+    "store": "Checkers",
+    "age": 33,
+    "province": "North West",
+    "city": "Pretoria",
+    "town": "Mabopane",
+    "satisfaction": "Excellent",
+    "decision_driver": "Price",
+    "suggestion": "Checkers should come to the township",
+    "submitted_at": "2026-03-15T17:09:42.065245"
   }
 ]

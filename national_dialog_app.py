@@ -6,6 +6,7 @@ import re
 import time
 from datetime import datetime
 from html import escape
+from urllib.parse import quote
 from uuid import uuid4
 
 import pandas as pd
@@ -46,6 +47,34 @@ def is_valid_sa_phone(phone):
 def is_valid_email(email):
     # Simple email regex
     return bool(re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email))
+
+
+def mask_email(email):
+    text = str(email or "").strip()
+    if not text or text == "No email provided" or "@" not in text:
+        return "Email hidden"
+
+    local_part, domain_part = text.split("@", 1)
+    if len(local_part) <= 2:
+        masked_local = f"{local_part[:1]}*"
+    else:
+        masked_local = f"{local_part[:1]}{'*' * (len(local_part) - 2)}{local_part[-1:]}"
+
+    domain_name, dot, domain_suffix = domain_part.partition(".")
+    masked_domain = f"{domain_name[:1]}***"
+    if dot and domain_suffix:
+        masked_domain = f"{masked_domain}.{domain_suffix}"
+
+    return f"{masked_local}@{masked_domain}"
+
+
+def mask_phone(phone):
+    text = str(phone or "").strip().replace(" ", "")
+    if not text or text == "No phone provided":
+        return "Phone hidden"
+    if len(text) <= 5:
+        return "*" * len(text)
+    return f"{text[:3]}****{text[-3:]}"
 
 
 def load_json_list(path):
@@ -102,16 +131,76 @@ def render_saved_media(media, caption=None):
         st.image(file_path, caption=caption or media.get("name"), use_container_width=True)
 
 
+def normalize_whatsapp_number(phone):
+    text = str(phone or "").strip().replace(" ", "")
+    if not text:
+        return ""
+    if text.startswith("+27"):
+        return f"27{text[3:]}"
+    if text.startswith("27"):
+        return text
+    if text.startswith("0"):
+        return f"27{text[1:]}"
+    return text
+
+
+def get_ad_action(ad):
+    link = str(ad.get("link", "")).strip()
+    if link:
+        return link, "More info"
+
+    whatsapp = str(ad.get("whatsapp", "")).strip()
+    if whatsapp and is_valid_sa_phone(whatsapp):
+        phone_number = normalize_whatsapp_number(whatsapp)
+        message = quote(
+            f"Hello, I saw your ad on National Dialog and I am interested in {ad.get('title', 'your offer')}."
+        )
+        return f"https://wa.me/{phone_number}?text={message}", "WhatsApp"
+
+    return None, "More info"
+
+
+def prepare_ads_data(ads):
+    prepared_ads = []
+    changed = False
+
+    for ad in ads:
+        if not isinstance(ad, dict):
+            continue
+
+        prepared = dict(ad)
+        if not prepared.get("ad_id"):
+            prepared["ad_id"] = f"ad-{uuid4().hex[:10]}"
+            changed = True
+
+        for field in ["price", "location", "whatsapp", "link"]:
+            if field not in prepared:
+                prepared[field] = ""
+                changed = True
+
+        prepared_ads.append(prepared)
+
+    return prepared_ads, changed
+
+
 def render_ad_card(ad):
     with st.container(border=True):
-        st.caption("Sponsored")
-        st.markdown(f"#### {ad['title']}")
-        render_saved_media(ad.get("media"), caption=ad["title"])
+        st.caption("Sponsored preview")
+        st.markdown(f"#### {ad.get('title', 'Sponsored Ad')}")
         if ad.get("description"):
             st.write(ad["description"])
-        if ad.get("link"):
-            st.markdown(f"[Visit advertiser]({ad['link']})")
-        st.caption(f"Posted by {ad.get('author', 'Community member')} • {ad['timestamp']}")
+        st.markdown(f"**Price:** {ad.get('price') or 'Not provided'}")
+        st.markdown(f"**Location:** {ad.get('location') or 'Not provided'}")
+        st.markdown(f"**WhatsApp:** {ad.get('whatsapp') or 'Not provided'}")
+        st.caption(f"Posted by {ad.get('author', 'Community member')} • {ad.get('timestamp', 'Unknown time')}")
+        st.markdown(
+            f"<a href=\"#blog-ad-{escape(ad.get('ad_id', ''), quote=True)}\">Jump to this ad in the blog feed</a>",
+            unsafe_allow_html=True,
+        )
+
+        action_url, action_label = get_ad_action(ad)
+        if action_url:
+            st.markdown(f"[{action_label}]({action_url})")
 
 
 def get_media_data_uri(media):
@@ -322,13 +411,185 @@ def build_ad_showcase_html(ads):
     '''
 
 
+def build_blog_ad_card_html(ad):
+    title = escape(str(ad.get("title", "Sponsored Ad")))
+    description = escape(str(ad.get("description", "Community promotion")))
+    price = escape(str(ad.get("price") or "Price on request"))
+    location = escape(str(ad.get("location") or "Location not provided"))
+    whatsapp = escape(str(ad.get("whatsapp") or "WhatsApp not provided"))
+    author = escape(str(ad.get("author") or "Community member"))
+    timestamp = escape(str(ad.get("timestamp") or "Unknown time"))
+    media_kind, media_uri = get_media_data_uri(ad.get("media"))
+
+    media_markup = ""
+    if media_uri and media_kind == "video":
+        media_markup = (
+            f'<div class="ad-media-wrap"><video class="ad-media" controls playsinline preload="metadata" '
+            f'src="{media_uri}"></video></div>'
+        )
+    elif media_uri:
+        media_markup = f'<div class="ad-media-wrap"><img class="ad-media" src="{media_uri}" alt="{title}"></div>'
+
+    action_url, action_label = get_ad_action(ad)
+    if action_url:
+        safe_url = escape(action_url, quote=True)
+        button_markup = (
+            f'<a class="card-button" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
+            f'{escape(action_label)}</a>'
+        )
+    else:
+        button_markup = '<button class="card-button" disabled>More info</button>'
+
+    return f'''
+    <html>
+      <body>
+        <div class="card">
+          <div class="card-details">
+            <p class="ad-tag">Sponsored Ad</p>
+            {media_markup}
+            <p class="text-title">{title}</p>
+            <p class="text-body">{description}</p>
+            <div class="meta-list">
+              <p><strong>Price:</strong> {price}</p>
+              <p><strong>Location:</strong> {location}</p>
+              <p><strong>WhatsApp:</strong> {whatsapp}</p>
+              <p><strong>Posted by:</strong> {author}</p>
+              <p><strong>Published:</strong> {timestamp}</p>
+            </div>
+          </div>
+          {button_markup}
+        </div>
+      </body>
+      <style>
+        body {{
+          margin: 0;
+          padding: 8px 2px 28px;
+          background: transparent;
+          font-family: Arial, sans-serif;
+        }}
+
+        .card {{
+          width: 100%;
+          min-height: 420px;
+          border-radius: 20px;
+          background: #f5f5f5;
+          position: relative;
+          padding: 1.8rem;
+          border: 2px solid #c3c6ce;
+          transition: 0.5s ease-out;
+          overflow: visible;
+          box-sizing: border-box;
+        }}
+
+        .card-details {{
+          color: black;
+          height: 100%;
+          gap: 0.8em;
+          display: grid;
+          align-content: start;
+        }}
+
+        .ad-tag {{
+          margin: 0;
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: #008bf8;
+        }}
+
+        .ad-media-wrap {{
+          width: 100%;
+          height: 180px;
+          border-radius: 16px;
+          overflow: hidden;
+          background: #dbe4ff;
+        }}
+
+        .ad-media {{
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }}
+
+        .text-title {{
+          margin: 0;
+          font-size: 1.5em;
+          font-weight: bold;
+          line-height: 1.2;
+          overflow-wrap: anywhere;
+        }}
+
+        .text-body {{
+          margin: 0;
+          color: rgb(95, 95, 95);
+          font-size: 0.98rem;
+          line-height: 1.5;
+          overflow-wrap: anywhere;
+        }}
+
+        .meta-list {{
+          display: grid;
+          gap: 0.4rem;
+          margin-bottom: 3rem;
+        }}
+
+        .meta-list p {{
+          margin: 0;
+          font-size: 0.94rem;
+          color: #1f2937;
+          line-height: 1.45;
+          overflow-wrap: anywhere;
+        }}
+
+        .card-button {{
+          transform: translate(-50%, 125%);
+          width: 60%;
+          border-radius: 1rem;
+          border: none;
+          background-color: #008bf8;
+          color: #fff;
+          font-size: 1rem;
+          padding: 0.5rem 1rem;
+          position: absolute;
+          left: 50%;
+          bottom: 0;
+          opacity: 0;
+          transition: 0.3s ease-out;
+          text-decoration: none;
+          text-align: center;
+          box-sizing: border-box;
+        }}
+
+        .card:hover {{
+          border-color: #008bf8;
+          box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.25);
+        }}
+
+        .card:hover .card-button {{
+          transform: translate(-50%, 50%);
+          opacity: 1;
+        }}
+
+        .card-button:disabled {{
+          background: #9ca3af;
+          cursor: not-allowed;
+          opacity: 1;
+          transform: translate(-50%, 50%);
+        }}
+      </style>
+    </html>
+    '''
+
+
 def build_blog_post_card_html(entry):
     user = entry.get("user", {})
     form_name = escape(str(entry.get("form", "Community Response")))
     timestamp = escape(str(entry.get("timestamp", "")))
     name = escape(str(user.get("name", "Community member")))
-    email = escape(str(user.get("email", "No email provided")))
-    phone = escape(str(user.get("phone", "No phone provided")))
+    email = escape(mask_email(user.get("email", "No email provided")))
+    phone = escape(mask_phone(user.get("phone", "No phone provided")))
 
     text_rows = []
     media_blocks = []
@@ -1152,6 +1413,16 @@ FORM_QUESTIONS = [
             ("What is the main issue that affects your banking experience?", "textarea"),
             ("What would make you move more of your money or business to this provider?", "textarea")
         ]
+    },
+    {
+        "title": "Cellphone Networks & Data Services",
+        "questions": [
+            ("Which cellphone network do you use most often?", "select", ["MTN", "Vodacom", "Cell-C", "Rain", "Telkom", "Other"]),
+            ("Which service do you use most frequently on this network?", "select", ["Voice calls", "Prepaid airtime", "Data bundles", "Monthly contract", "Home internet / router", "Business connectivity"]),
+            ("How would you rate signal coverage, call quality, and internet speed?", "select", ["Excellent", "Good", "Average", "Poor", "Very Poor"]),
+            ("What usage issue affects you most often?", "textarea"),
+            ("What pricing, coverage, or service improvement would make you spend more with this network?", "textarea")
+        ]
     }
 ]
 
@@ -1160,6 +1431,9 @@ poll_data = load_json_list(POLL_PATH)
 
 # --- ADS DATA ---
 ads_data = load_json_list(ADS_PATH)
+ads_data, ads_data_changed = prepare_ads_data(ads_data)
+if ads_data_changed:
+    save_json_list(ADS_PATH, ads_data)
 
 # --- MAIN UI ---
 st.title("National Dialog: South Africa")
@@ -1175,6 +1449,9 @@ with ad_form_col:
     with st.form("ad_submission_form"):
         ad_title = st.text_input("Ad title")
         ad_description = st.text_area("Short ad description", max_chars=240)
+        ad_price = st.text_input("Price or offer")
+        ad_location = st.text_input("Business location")
+        ad_whatsapp = st.text_input("WhatsApp number")
         ad_link = st.text_input("Optional website link")
         ad_media = st.file_uploader(
             "Upload an image or video",
@@ -1191,6 +1468,8 @@ with ad_form_col:
             ad_errors.append("Please add a short description for the ad.")
         if ad_media is None:
             ad_errors.append("Please upload an image or video for the ad.")
+        if ad_whatsapp and not is_valid_sa_phone(ad_whatsapp):
+            ad_errors.append("Enter a valid South African WhatsApp number (e.g., 0821234567 or +27821234567).")
         if ad_link and not ad_link.startswith(("http://", "https://")):
             ad_errors.append("Website link must start with http:// or https://")
 
@@ -1199,8 +1478,12 @@ with ad_form_col:
                 st.error(error)
         else:
             ad_entry = {
+                "ad_id": f"ad-{uuid4().hex[:10]}",
                 "title": ad_title.strip(),
                 "description": ad_description.strip(),
+                "price": ad_price.strip(),
+                "location": ad_location.strip(),
+                "whatsapp": ad_whatsapp.strip(),
                 "link": ad_link.strip(),
                 "media": save_uploaded_media(ad_media, AD_MEDIA_DIR),
                 "author": st.session_state["user"]["name"],
@@ -1215,10 +1498,10 @@ with ad_form_col:
             st.rerun()
 
 with ad_preview_col:
-    st.caption("Current ad cards")
+    st.caption("Current ads with links to their matching placements in the public blog feed")
     if ads_data:
-        components.html(build_ad_showcase_html(ads_data), height=380, scrolling=False)
-        st.caption("Scroll sideways to browse image and video ads.")
+        for ad in reversed(ads_data[-6:]):
+            render_ad_card(ad)
     else:
         st.info("No ads yet. Use the form to publish the first ad.")
 
@@ -1296,9 +1579,24 @@ if recent_blog_entries:
 
         if ads_data and idx < len(recent_blog_entries) - 1 and idx % 2 == 0:
             ad_index = (idx // 2) % len(ads_data)
-            render_ad_card(ads_data[ad_index])
+            ad = ads_data[ad_index]
+            st.markdown(f'<div id="blog-ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
+            components.html(build_blog_ad_card_html(ad), height=500, scrolling=False)
+
+    if ads_data:
+        used_count = min(len(ads_data), max(0, len(recent_blog_entries) // 2))
+        remaining_ads = ads_data[used_count:]
+        for ad in remaining_ads:
+            st.markdown(f'<div id="blog-ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
+            components.html(build_blog_ad_card_html(ad), height=500, scrolling=False)
 else:
-    st.info("No public responses yet. Submit a form to start the conversation.")
+    if ads_data:
+        st.caption("No blog posts yet, but sponsored ads are already available below.")
+        for ad in reversed(ads_data):
+            st.markdown(f'<div id="blog-ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
+            components.html(build_blog_ad_card_html(ad), height=500, scrolling=False)
+    else:
+        st.info("No public responses yet. Submit a form to start the conversation.")
 
 # --- POLL DISPLAY ---
 st.sidebar.subheader("Popular Retail Establishments (Poll)")

@@ -172,5 +172,24 @@
       "Any suggestions for improvement?": "variety, we dont all work in a office"
     },
     "timestamp": "2025-07-23T01:12:45.213428"
+  },
+  {
+    "user": {
+      "name": "Thapelo",
+      "phone": "0654121232",
+      "email": "kgothatsothooe@gmail.com"
+    },
+    "form": "Retail & Consumer Insights",
+    "responses": {
+      "Age": 33,
+      "Province": "North West",
+      "City": "Pretoria",
+      "Town": "Mabopane",
+      "Which retail brand or chain do you spend with most often?": "Checkers",
+      "How would you rate the overall in-store service, cleanliness, and stock availability?": "Excellent",
+      "Which factor most influences where you shop?": "Price",
+      "What one improvement would increase your spending or loyalty?": "Checkers should come to the township"
+    },
+    "timestamp": "2026-03-15T17:09:42.065245"
   }
 ]
