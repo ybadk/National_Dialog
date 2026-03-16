@@ -4,6 +4,7 @@ import mimetypes
 import os
 import re
 import time
+from collections import Counter
 from datetime import datetime
 from html import escape
 from urllib.parse import quote
@@ -36,6 +37,14 @@ TOURIST_LINKS = [
     {"label": "Facebook", "url": "https://www.facebook.com/TshwaneTourismAssociation"},
     {"label": "X", "url": "https://twitter.com/Tshwane_Tourism"},
     {"label": "YouTube", "url": "https://www.youtube.com/channel/UCXeVsem77xzvepVaYJKZtlw"},
+]
+
+GENDER_OPTIONS = [
+    "Prefer not to say",
+    "Female",
+    "Male",
+    "Non-binary",
+    "Other",
 ]
 
 
@@ -1108,6 +1117,21 @@ def normalize_poll_entry(entry):
         text = clean_text(value, fallback)
         return text.title() if text.islower() else text
 
+    def format_gender(value):
+        text = clean_text(value, "Not provided")
+        gender_map = {
+            "female": "Female",
+            "male": "Male",
+            "non-binary": "Non-binary",
+            "prefer not to say": "Prefer not to say",
+            "other": "Other",
+            "not provided": "Not provided",
+        }
+        lowered = text.lower()
+        if lowered in gender_map:
+            return gender_map[lowered]
+        return text.title() if text.islower() else text
+
     if isinstance(entry, str):
         store_name = format_store_name(entry, "Unknown Store")
         return {
@@ -1116,10 +1140,12 @@ def normalize_poll_entry(entry):
             "city": "Unknown City",
             "town": "Unknown Town",
             "age": "Unknown Age",
+            "gender": "Not provided",
             "satisfaction": "Not provided",
             "decision_driver": "Not provided",
             "suggestion": "Not provided",
             "submitted_at": "Unknown Date",
+            "mention_count": 1,
         }
 
     if not isinstance(entry, dict):
@@ -1137,10 +1163,12 @@ def normalize_poll_entry(entry):
         "city": format_location(entry.get("city"), "Unknown City"),
         "town": format_location(entry.get("town"), "Unknown Town"),
         "age": age_text,
+        "gender": format_gender(entry.get("gender")),
         "satisfaction": clean_text(entry.get("satisfaction"), "Not provided"),
         "decision_driver": clean_text(entry.get("decision_driver"), "Not provided"),
         "suggestion": clean_text(entry.get("suggestion"), "Not provided"),
         "submitted_at": clean_text(entry.get("submitted_at") or entry.get("timestamp"), "Unknown Date"),
+        "mention_count": entry.get("mention_count", 1),
     }
 
 
@@ -1175,6 +1203,7 @@ def build_retail_poll_entries(blog_entries, saved_poll_entries):
             {
                 "store": store_value,
                 "age": responses.get("Age"),
+                "gender": responses.get("Gender") or blog_entry.get("user", {}).get("gender"),
                 "province": responses.get("Province"),
                 "city": responses.get("City"),
                 "town": responses.get("Town"),
@@ -1190,6 +1219,7 @@ def build_retail_poll_entries(blog_entries, saved_poll_entries):
         signature = (
             normalized["store"].lower(),
             str(normalized["age"]).lower(),
+            normalized["gender"].lower(),
             normalized["province"].lower(),
             normalized["city"].lower(),
             normalized["town"].lower(),
@@ -1205,12 +1235,17 @@ def build_retail_poll_entries(blog_entries, saved_poll_entries):
         signature = (
             normalized["store"].lower(),
             str(normalized["age"]).lower(),
+            normalized["gender"].lower(),
             normalized["province"].lower(),
             normalized["city"].lower(),
             normalized["town"].lower(),
         )
         if signature not in detailed_signatures:
             detailed_entries.append(normalized)
+
+    mention_counts = Counter(row["store"].lower() for row in detailed_entries)
+    for row in detailed_entries:
+        row["mention_count"] = mention_counts[row["store"].lower()]
 
     return list(reversed(detailed_entries))
 
@@ -1231,7 +1266,8 @@ def build_poll_cards_html(rows):
             <div class="item item--{theme_index}">
               {icons[idx % len(icons)]}
               <span class="quantity">{escape(row["store"])}</span>
-              <span class="text text--{theme_index}">Age: {escape(str(row["age"]))}</span>
+              <span class="metric-badge">Mentions: {escape(str(row.get("mention_count", 1)))}</span>
+              <span class="text text--{theme_index}">Age: {escape(str(row["age"]))} • Gender: {escape(row["gender"])}</span>
               <span class="meta"><strong>Province:</strong> {escape(row["province"])}</span>
               <span class="meta"><strong>City:</strong> {escape(row["city"])}</span>
               <span class="meta"><strong>Town:</strong> {escape(row["town"])}</span>
@@ -1270,7 +1306,7 @@ def build_poll_cards_html(rows):
         .card .item {{
           border-radius: 12px;
           width: 100%;
-          min-height: 210px;
+          min-height: 228px;
           display: flex;
           flex-direction: column;
           align-items: flex-start;
@@ -1303,6 +1339,16 @@ def build_poll_cards_html(rows):
           word-break: break-word;
         }}
 
+        .metric-badge {{
+          margin-top: 8px;
+          padding: 3px 9px;
+          border-radius: 999px;
+          background: rgba(15, 23, 42, 0.12);
+          color: #0f172a;
+          font-size: 11px;
+          font-weight: 700;
+        }}
+
         .text {{
           font-size: 13px;
           font-weight: 700;
@@ -1330,7 +1376,7 @@ def build_poll_cards_html(rows):
     '''
 
 
-def show_transition_loader(title, message):
+def show_transition_loader(title, message, duration_seconds=1):
     loader_html = """
     <div style="display:flex;justify-content:center;padding:0.5rem 0 0.25rem;">
       <div class="loader">
@@ -1375,7 +1421,7 @@ def show_transition_loader(title, message):
         st.caption(message)
         components.html(loader_html, height=50)
 
-    time.sleep(1)
+    time.sleep(duration_seconds)
 
 
 def show_submission_notification(title="Congratulations", subtitle="your response was submitted"):
@@ -1494,6 +1540,7 @@ def authenticate():
     st.markdown("#### Please enter your details to proceed:")
     with st.form("auth_form"):
         name = st.text_input("Name", key="auth_name")
+        gender = st.selectbox("Gender", GENDER_OPTIONS, key="auth_gender")
         phone = st.text_input("Phone Number", key="auth_phone")
         email = st.text_input("Email", key="auth_email")
         submit = st.form_submit_button("Enter")
@@ -1509,9 +1556,20 @@ def authenticate():
             for err in errors:
                 st.error(err)
         else:
-            st.session_state["user"] = {"name": name, "phone": phone, "email": email}
+            st.session_state["user"] = {
+                "name": name,
+                "gender": gender,
+                "phone": phone,
+                "email": email,
+            }
             # Save to JSON/CSV
-            user_row = {"name": name, "phone": phone, "email": email, "timestamp": datetime.now().isoformat()}
+            user_row = {
+                "name": name,
+                "gender": gender,
+                "phone": phone,
+                "email": email,
+                "timestamp": datetime.now().isoformat(),
+            }
             # JSON
             users = load_json_list(JSON_PATH)
             users.append(user_row)
@@ -1529,6 +1587,9 @@ def authenticate():
 
 if "user" not in st.session_state:
     authenticate()
+
+if "blog_feed_loader_pending" not in st.session_state:
+    st.session_state["blog_feed_loader_pending"] = True
 
 # --- BLOG DATA ---
 blog_data = load_json_list(BLOG_PATH)
@@ -1621,6 +1682,9 @@ with ad_form_col:
     st.caption("Create a small ad that can appear between public blog posts.")
     with st.form("ad_submission_form"):
         ad_title = st.text_input("Ad title")
+        ad_gender_default = st.session_state.get("user", {}).get("gender", GENDER_OPTIONS[0])
+        ad_gender_index = GENDER_OPTIONS.index(ad_gender_default) if ad_gender_default in GENDER_OPTIONS else 0
+        ad_gender = st.selectbox("Gender", GENDER_OPTIONS, index=ad_gender_index, key="ad_gender")
         ad_description = st.text_area("Short ad description", max_chars=240)
         ad_price = st.text_input("Price or offer")
         ad_location = st.text_input("Business location")
@@ -1654,6 +1718,7 @@ with ad_form_col:
                 "ad_id": f"ad-{uuid4().hex[:10]}",
                 "title": ad_title.strip(),
                 "description": ad_description.strip(),
+                "gender": ad_gender,
                 "price": ad_price.strip(),
                 "location": ad_location.strip(),
                 "whatsapp": ad_whatsapp.strip(),
@@ -1668,6 +1733,7 @@ with ad_form_col:
                 "Success",
                 "your ad was published",
             )
+            st.session_state["blog_feed_loader_pending"] = True
             st.rerun()
 
 with ad_preview_col:
@@ -1687,10 +1753,14 @@ for idx, (tab, form) in enumerate(zip(form_tab, FORM_QUESTIONS)):
         with st.form(f"form_{idx}"):
             responses = {}
             # New demographic fields
+            default_gender = st.session_state.get("user", {}).get("gender", GENDER_OPTIONS[0])
+            gender_index = GENDER_OPTIONS.index(default_gender) if default_gender in GENDER_OPTIONS else 0
+            gender = st.selectbox("Gender", GENDER_OPTIONS, index=gender_index, key=f"gender_{idx}")
             age = st.number_input("Your Age", min_value=10, max_value=120, key=f"age_{idx}")
             province = st.text_input("Province", key=f"province_{idx}")
             city = st.text_input("City", key=f"city_{idx}")
             town = st.text_input("Town", key=f"town_{idx}")
+            responses["Gender"] = gender
             responses["Age"] = age
             responses["Province"] = province
             responses["City"] = city
@@ -1725,6 +1795,7 @@ for idx, (tab, form) in enumerate(zip(form_tab, FORM_QUESTIONS)):
                 poll_data.append({
                     "store": responses[poll_fields["store"]],
                     "age": age,
+                    "gender": gender,
                     "province": province,
                     "city": city,
                     "town": town,
@@ -1738,12 +1809,21 @@ for idx, (tab, form) in enumerate(zip(form_tab, FORM_QUESTIONS)):
                 "Thank You",
                 "your response was submitted",
             )
+            st.session_state["blog_feed_loader_pending"] = True
             st.rerun()
 
 # --- BLOG DISPLAY ---
 st.markdown("---")
 st.subheader("Public Blog: Responses from Across South Africa")
 recent_blog_entries = list(reversed(blog_data[-20:]))
+
+if st.session_state.get("blog_feed_loader_pending"):
+    show_transition_loader(
+        "Loading blog posts",
+        "Preparing the latest public responses for you.",
+        duration_seconds=2,
+    )
+    st.session_state["blog_feed_loader_pending"] = False
 
 if recent_blog_entries:
     for idx, entry in enumerate(recent_blog_entries):
