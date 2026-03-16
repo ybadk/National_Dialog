@@ -39,6 +39,20 @@ TOURIST_LINKS = [
     {"label": "YouTube", "url": "https://www.youtube.com/channel/UCXeVsem77xzvepVaYJKZtlw"},
 ]
 
+RETAILER_LINKS = {
+    "shoprite": "https://www.shoprite.co.za/",
+    "pick n pay": "https://www.pnp.co.za/",
+    "woolworths": "https://www.woolworths.co.za/",
+    "checkers": "https://www.checkers.co.za/",
+    "spar": "https://www.spar.co.za/",
+    "truworths": "https://www.truworths.co.za/",
+    "jet": "https://www.jetstores.co.za/",
+    "mr price": "https://www.mrp.com/",
+    "pep": "https://www.pepstores.com/",
+    "clicks": "https://www.clicks.co.za/",
+    "dis-chem": "https://www.dischem.co.za/",
+}
+
 GENDER_OPTIONS = [
     "Prefer not to say",
     "Female",
@@ -46,6 +60,123 @@ GENDER_OPTIONS = [
     "Non-binary",
     "Other",
 ]
+
+
+def apply_south_africa_theme():
+    st.markdown(
+        """
+        <style>
+        .stApp {
+          background:
+            radial-gradient(circle at top left, rgba(206, 17, 38, 0.10), transparent 28%),
+            radial-gradient(circle at top right, rgba(0, 35, 149, 0.10), transparent 30%),
+            radial-gradient(circle at bottom left, rgba(0, 122, 77, 0.10), transparent 32%),
+            linear-gradient(180deg, #fffdf7 0%, #f8fafc 48%, #f5fff9 100%);
+        }
+
+        [data-testid="stHeader"] {
+          background: rgba(255, 255, 255, 0.72);
+          backdrop-filter: blur(8px);
+        }
+
+        [data-testid="stSidebar"] {
+          background:
+            linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(0, 35, 149, 0.96) 34%, rgba(0, 122, 77, 0.95) 68%, rgba(206, 17, 38, 0.93) 100%);
+        }
+
+        [data-testid="stSidebar"] * {
+          color: #f8fafc;
+        }
+
+        [data-testid="stSidebar"] .stCaption {
+          color: rgba(248, 250, 252, 0.82);
+        }
+
+        h1, h2, h3 {
+          color: #111827;
+          letter-spacing: -0.02em;
+        }
+
+        h1 {
+          background: linear-gradient(90deg, #111827 0%, #002395 26%, #007a4d 56%, #ffb612 78%, #ce1126 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
+        h3 {
+          position: relative;
+          display: inline-block;
+          padding-bottom: 0.2rem;
+        }
+
+        h3::after {
+          content: "";
+          display: block;
+          width: 100%;
+          height: 4px;
+          margin-top: 6px;
+          border-radius: 999px;
+          background: linear-gradient(90deg, #111827 0%, #ce1126 24%, #002395 50%, #007a4d 76%, #ffb612 100%);
+        }
+
+        hr {
+          border-top: 2px solid rgba(17, 24, 39, 0.08);
+          background-image: linear-gradient(90deg, #111827 0%, #ce1126 20%, #002395 45%, #007a4d 70%, #ffb612 100%);
+          height: 2px;
+          border: none;
+        }
+
+        [data-baseweb="tab-list"] {
+          gap: 8px;
+        }
+
+        [data-baseweb="tab"] {
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.98));
+          border: 1px solid rgba(17, 24, 39, 0.08);
+          border-radius: 14px 14px 0 0;
+          padding: 10px 14px;
+          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+        }
+
+        [data-baseweb="tab"][aria-selected="true"] {
+          background: linear-gradient(90deg, #002395 0%, #007a4d 60%, #ffb612 100%);
+          color: #ffffff !important;
+          border-color: transparent;
+        }
+
+        div[data-testid="stForm"] {
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 235, 0.98));
+          border: 1px solid rgba(17, 24, 39, 0.08);
+          border-top: 5px solid #ffb612;
+          border-radius: 20px;
+          padding: 1rem 1rem 0.75rem;
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .stButton > button,
+        div[data-testid="stForm"] button {
+          border: none;
+          border-radius: 999px;
+          background: linear-gradient(90deg, #ce1126 0%, #002395 38%, #007a4d 74%, #ffb612 100%);
+          color: #ffffff;
+          font-weight: 700;
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+        }
+
+        .stButton > button:hover,
+        div[data-testid="stForm"] button:hover {
+          filter: brightness(1.03);
+          transform: translateY(-1px);
+        }
+
+        .stCaption {
+          color: #475569;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def is_valid_sa_phone(phone):
@@ -245,7 +376,8 @@ def build_ad_showcase_html(ads):
     </svg>
     """
 
-    for ad in reversed(ads):
+    for idx, ad in enumerate(reversed(ads)):
+        theme_index = (idx % 5) + 1
         media_kind, media_uri = get_media_data_uri(ad.get("media"))
         if media_uri and media_kind == "video":
             media_markup = (
@@ -275,7 +407,7 @@ def build_ad_showcase_html(ads):
 
         cards.append(
             f'''
-            <div class="card">
+            <div class="card theme-{theme_index}">
               {media_markup}
               <p class="card-title">{escape(ad.get("title", "Sponsored Ad"))}</p>
               <p class="card-des">{escape(ad.get("description", "Community promotion"))}</p>
@@ -313,34 +445,42 @@ def build_ad_showcase_html(ads):
           flex-direction: column;
           flex: 0 0 250px;
           min-height: 315px;
-          background-color: #ffffff;
-          border-radius: 10px;
-          box-shadow: 0px 10px 12px rgba(0, 0, 0, 0.08),
-            -4px -4px 12px rgba(0, 0, 0, 0.08);
+          background: linear-gradient(180deg, var(--card-soft), #ffffff);
+          border-radius: 16px;
+          box-shadow: 0px 12px 18px rgba(15, 23, 42, 0.10),
+            -4px -4px 12px rgba(15, 23, 42, 0.04);
           overflow: hidden;
           transition: all 0.3s;
           cursor: pointer;
           box-sizing: border-box;
-          padding: 10px;
+          padding: 12px;
+          border-top: 5px solid var(--card-accent);
         }}
 
         .card:hover {{
           transform: translateY(-10px);
-          box-shadow: 0px 20px 20px rgba(0, 0, 0, 0.1),
-            -4px -4px 12px rgba(0, 0, 0, 0.08);
+          box-shadow: 0px 20px 24px rgba(15, 23, 42, 0.14),
+            -4px -4px 12px rgba(15, 23, 42, 0.06);
         }}
+
+        .theme-1 {{ --card-accent: #ce1126; --card-accent-soft: #ef4444; --card-soft: #fff1f2; --card-text: #43121a; --card-button-text: #ffffff; }}
+        .theme-2 {{ --card-accent: #002395; --card-accent-soft: #2563eb; --card-soft: #eff6ff; --card-text: #13233f; --card-button-text: #ffffff; }}
+        .theme-3 {{ --card-accent: #007a4d; --card-accent-soft: #16a34a; --card-soft: #f0fdf4; --card-text: #113126; --card-button-text: #ffffff; }}
+        .theme-4 {{ --card-accent: #d39b00; --card-accent-soft: #ffb612; --card-soft: #fff8e1; --card-text: #483100; --card-button-text: #111827; }}
+        .theme-5 {{ --card-accent: #111827; --card-accent-soft: #374151; --card-soft: #f3f4f6; --card-text: #111827; --card-button-text: #ffffff; }}
 
         .card-image-container {{
           width: 100%;
           height: 180px;
-          border-radius: 10px;
+          border-radius: 14px;
           margin-bottom: 12px;
           overflow: hidden;
-          background-color: rgb(165, 165, 165);
+          background-color: var(--card-soft);
           display: flex;
           align-items: center;
           justify-content: center;
           position: relative;
+          border: 1px solid rgba(255, 255, 255, 0.7);
         }}
 
         .card-media {{
@@ -394,8 +534,8 @@ def build_ad_showcase_html(ads):
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #008bf8;
-          color: #ffffff;
+          background: var(--card-accent);
+          color: var(--card-button-text);
           font-size: 12px;
           line-height: 1;
         }}
@@ -433,7 +573,7 @@ def build_ad_showcase_html(ads):
           margin: 0 0 6px;
           font-size: 17px;
           font-weight: 600;
-          color: #1797b8;
+          color: var(--card-accent);
           overflow: hidden;
           display: -webkit-box;
           -webkit-box-orient: vertical;
@@ -445,7 +585,7 @@ def build_ad_showcase_html(ads):
           margin: 0;
           min-height: 34px;
           font-size: 13px;
-          color: #1797b8;
+          color: var(--card-text);
           overflow: hidden;
           display: -webkit-box;
           -webkit-box-orient: vertical;
@@ -457,11 +597,11 @@ def build_ad_showcase_html(ads):
           margin-top: auto;
           text-decoration: none;
           font-size: 15px;
-          color: #fff;
+          color: var(--card-button-text);
           display: flex;
           justify-content: center;
           align-items: center;
-          background-color: #12bde7;
+          background: linear-gradient(90deg, var(--card-accent), var(--card-accent-soft));
           width: 34px;
           height: 34px;
           border-radius: 10px;
@@ -570,17 +710,27 @@ def build_blog_ad_card_html(ad):
           width: 100%;
           min-height: 420px;
           border-radius: 20px;
-          background: #f5f5f5;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
           position: relative;
           padding: 1.8rem;
-          border: 2px solid #c3c6ce;
+          border: 1px solid rgba(17, 24, 39, 0.08);
           transition: 0.5s ease-out;
           overflow: visible;
           box-sizing: border-box;
+          box-shadow: 0 18px 36px rgba(15, 23, 42, 0.10);
+        }}
+
+        .card::before {{
+          content: "";
+          position: absolute;
+          inset: 0 0 auto 0;
+          height: 6px;
+          border-radius: 20px 20px 0 0;
+          background: linear-gradient(90deg, #111827 0%, #ce1126 22%, #002395 48%, #007a4d 72%, #ffb612 100%);
         }}
 
         .card-details {{
-          color: black;
+          color: #111827;
           height: 100%;
           gap: 0.8em;
           display: grid;
@@ -593,7 +743,7 @@ def build_blog_ad_card_html(ad):
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          color: #008bf8;
+          color: #007a4d;
         }}
 
         .ad-media-wrap {{
@@ -601,8 +751,9 @@ def build_blog_ad_card_html(ad):
           min-height: 180px;
           border-radius: 16px;
           overflow: hidden;
-          background: #dbe4ff;
+          background: linear-gradient(135deg, #eff6ff 0%, #fff8e1 100%);
           position: relative;
+          border: 1px solid rgba(17, 24, 39, 0.08);
         }}
 
         .ad-media {{
@@ -623,7 +774,7 @@ def build_blog_ad_card_html(ad):
           align-items: center;
           gap: 0.75rem;
           padding: 0.7rem 0.9rem;
-          background: linear-gradient(90deg, #0f172a, #1d4ed8);
+          background: linear-gradient(90deg, #111827 0%, #002395 35%, #007a4d 70%, #ffb612 100%);
           color: #ffffff;
           font-size: 0.82rem;
           flex-wrap: wrap;
@@ -689,7 +840,7 @@ def build_blog_ad_card_html(ad):
           width: 34px;
           height: 34px;
           border-radius: 50%;
-          background: #2563eb;
+          background: #007a4d;
           color: #ffffff;
           font-size: 15px;
           line-height: 1;
@@ -705,7 +856,7 @@ def build_blog_ad_card_html(ad):
 
         .text-body {{
           margin: 0;
-          color: rgb(95, 95, 95);
+          color: #475569;
           font-size: 0.98rem;
           line-height: 1.5;
           overflow-wrap: anywhere;
@@ -730,7 +881,7 @@ def build_blog_ad_card_html(ad):
           width: 60%;
           border-radius: 1rem;
           border: none;
-          background-color: #008bf8;
+          background: linear-gradient(90deg, #ce1126 0%, #002395 34%, #007a4d 68%, #ffb612 100%);
           color: #fff;
           font-size: 1rem;
           padding: 0.5rem 1rem;
@@ -745,8 +896,8 @@ def build_blog_ad_card_html(ad):
         }}
 
         .card:hover {{
-          border-color: #008bf8;
-          box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.25);
+          border-color: rgba(0, 122, 77, 0.35);
+          box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
         }}
 
         .card:hover .card-button {{
@@ -805,7 +956,7 @@ def build_blog_post_card_html(entry):
             combined_text = f"{safe_key} {safe_value}"
             text_line_units += max(2, (len(combined_text) + 59) // 60)
             text_rows.append(
-                f'<li><span class="label">{safe_key}</span><span class="value">{safe_value}</span></li>'
+                f'<li class="response-item response-item--{(len(text_rows) % 5) + 1}"><span class="label">{safe_key}</span><span class="value">{safe_value}</span></li>'
             )
 
     responses_markup = "".join(text_rows) or "<li><span class=\"value\">No response details provided.</span></li>"
@@ -868,10 +1019,11 @@ def build_blog_post_card_html(entry):
               border-radius: 22px;
               color: #0f172a;
               overflow: hidden;
-              background: #ffffff;
+              background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
               width: 100%;
               box-sizing: border-box;
               transition: all 0.48s cubic-bezier(0.23, 1, 0.32, 1);
+              box-shadow: 0 18px 38px rgba(15, 23, 42, 0.10);
             }}
 
             .heading {{
@@ -891,7 +1043,7 @@ def build_blog_post_card_html(entry):
               font-size: 12px;
               letter-spacing: 0.08em;
               text-transform: uppercase;
-              color: #0a3cff;
+              color: #007a4d;
               font-weight: 700;
             }}
 
@@ -916,15 +1068,22 @@ def build_blog_post_card_html(entry):
               display: flex;
               flex-direction: column;
               gap: 4px;
-              padding: 10px 12px;
+              padding: 12px 14px;
               border-radius: 14px;
               background: #f8fafc;
+              border-left: 4px solid transparent;
             }}
+
+            .response-item--1 {{ background: linear-gradient(90deg, #fff1f2 0%, #ffffff 100%); border-left-color: #ce1126; }}
+            .response-item--2 {{ background: linear-gradient(90deg, #eff6ff 0%, #ffffff 100%); border-left-color: #002395; }}
+            .response-item--3 {{ background: linear-gradient(90deg, #f0fdf4 0%, #ffffff 100%); border-left-color: #007a4d; }}
+            .response-item--4 {{ background: linear-gradient(90deg, #fff8e1 0%, #ffffff 100%); border-left-color: #ffb612; }}
+            .response-item--5 {{ background: linear-gradient(90deg, #f3f4f6 0%, #ffffff 100%); border-left-color: #111827; }}
 
             .label {{
               font-size: 11px;
               font-weight: 700;
-              color: #0a3cff;
+              color: #002395;
               text-transform: none;
               line-height: 1.45;
               overflow-wrap: anywhere;
@@ -946,14 +1105,15 @@ def build_blog_post_card_html(entry):
             }}
 
             .media-card {{
-              background: #f8fafc;
+              background: linear-gradient(135deg, #eff6ff 0%, #fff8e1 100%);
               border-radius: 16px;
               padding: 14px;
+              border: 1px solid rgba(17, 24, 39, 0.08);
             }}
 
             .media-label {{
               margin: 0 0 10px;
-              color: #0a3cff;
+              color: #007a4d;
               font-size: 12px;
               font-weight: 700;
               text-transform: none;
@@ -975,7 +1135,7 @@ def build_blog_post_card_html(entry):
               position: absolute;
               inset: -30%;
               border-radius: inherit;
-              background: linear-gradient(to right, #0a3cff, #0a3cff);
+              background: conic-gradient(from 0deg, #111827, #ce1126, #002395, #007a4d, #ffb612, #111827);
               transform-origin: center;
               animation: moving 4.8s linear infinite paused;
               transition: all 0.88s cubic-bezier(0.23, 1, 0.32, 1);
@@ -987,11 +1147,10 @@ def build_blog_post_card_html(entry):
             }}
 
             .card:hover {{
-              box-shadow: 0rem 6px 13px rgba(10, 60, 255, 0.1),
-                0rem 24px 24px rgba(10, 60, 255, 0.09),
-                0rem 55px 33px rgba(10, 60, 255, 0.05),
-                0rem 97px 39px rgba(10, 60, 255, 0.01),
-                0rem 152px 43px rgba(10, 60, 255, 0);
+              box-shadow: 0rem 8px 18px rgba(17, 24, 39, 0.12),
+                0rem 22px 28px rgba(0, 35, 149, 0.08),
+                0rem 42px 36px rgba(0, 122, 77, 0.05),
+                0rem 70px 44px rgba(206, 17, 38, 0.02);
               transform: scale(1.01);
             }}
 
@@ -1250,23 +1409,46 @@ def build_retail_poll_entries(blog_entries, saved_poll_entries):
     return list(reversed(detailed_entries))
 
 
+def get_retailer_url(store_name):
+    normalized_name = str(store_name or "").strip().lower()
+    return RETAILER_LINKS.get(normalized_name)
+
+
 def build_poll_cards_html(rows):
     icons = [
         '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="rgba(149,149,255,1)" d="M17 15.245v6.872a.5.5 0 0 1-.757.429L12 20l-4.243 2.546a.5.5 0 0 1-.757-.43v-6.87a8 8 0 1 1 10 0zm-8 1.173v3.05l3-1.8 3 1.8v-3.05A7.978 7.978 0 0 1 12 17a7.978 7.978 0 0 1-3-.582zM12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path></svg>',
         '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 16c1.657 0 3 1.343 3 3s-1.343 3-3 3-3-1.343-3-3 1.343-3 3-3zM6 12c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm10 6c-.552 0-1 .448-1 1s.448 1 1 1 1-.448 1-1-.448-1-1-1zM6 14c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2zm8.5-12C17.538 2 20 4.462 20 7.5S17.538 13 14.5 13 9 10.538 9 7.5 11.462 2 14.5 2zm0 2C12.567 4 11 5.567 11 7.5s1.567 3.5 3.5 3.5S18 9.433 18 7.5 16.433 4 14.5 4z" fill="rgba(252,161,71,1)"></path></svg>',
         '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="rgba(66,193,110,1)" d="M20.083 15.2l1.202.721a.5.5 0 0 1 0 .858l-8.77 5.262a1 1 0 0 1-1.03 0l-8.77-5.262a.5.5 0 0 1 0-.858l1.202-.721L12 20.05l8.083-4.85zm0-4.7l1.202.721a.5.5 0 0 1 0 .858L12 17.65l-9.285-5.571a.5.5 0 0 1 0-.858l1.202-.721L12 15.35l8.083-4.85zm-7.569-9.191l8.771 5.262a.5.5 0 0 1 0 .858L12 13 2.715 7.429a.5.5 0 0 1 0-.858l8.77-5.262a1 1 0 0 1 1.03 0zM12 3.332L5.887 7 12 10.668 18.113 7 12 3.332z"></path></svg>',
         '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="rgba(220,91,183,1)" d="M12 20h8v2h-8C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10a9.956 9.956 0 0 1-2 6h-2.708A8 8 0 1 0 12 20zm0-10a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm-4 4a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm8 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm-4 4a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"></path></svg>',
+        '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="rgba(15,23,42,1)" d="M7 4h10a2 2 0 0 1 2 2v12.5a1.5 1.5 0 0 1-2.56 1.06L12 15.12l-4.44 4.44A1.5 1.5 0 0 1 5 18.5V6a2 2 0 0 1 2-2zm0 2v10.38l4.29-4.3a1 1 0 0 1 1.42 0L17 16.38V6H7z"></path></svg>',
     ]
 
     items = []
     for idx, row in enumerate(rows):
-        theme_index = (idx % 4) + 1
+        theme_index = (idx % 5) + 1
+        retailer_url = get_retailer_url(row["store"])
+        store_name = escape(row["store"])
+        store_markup = store_name
+        visit_link_markup = ""
+
+        if retailer_url:
+            safe_url = escape(retailer_url, quote=True)
+            store_markup = (
+                f'<a class="store-link" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
+                f'{store_name} <span class="store-link__icon">↗</span></a>'
+            )
+            visit_link_markup = (
+                f'<a class="visit-link" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
+                'Visit official site</a>'
+            )
+
         items.append(
             f'''
             <div class="item item--{theme_index}">
               {icons[idx % len(icons)]}
-              <span class="quantity">{escape(row["store"])}</span>
+              <span class="quantity">{store_markup}</span>
               <span class="metric-badge">Mentions: {escape(str(row.get("mention_count", 1)))}</span>
+              {visit_link_markup}
               <span class="text text--{theme_index}">Age: {escape(str(row["age"]))} • Gender: {escape(row["gender"])}</span>
               <span class="meta"><strong>Province:</strong> {escape(row["province"])}</span>
               <span class="meta"><strong>City:</strong> {escape(row["city"])}</span>
@@ -1304,20 +1486,32 @@ def build_poll_cards_html(rows):
         }}
 
         .card .item {{
-          border-radius: 12px;
+          position: relative;
+          border-radius: 16px;
           width: 100%;
-          min-height: 228px;
+          min-height: 240px;
           display: flex;
           flex-direction: column;
           align-items: flex-start;
           justify-content: flex-start;
           text-align: left;
-          padding: 14px 12px;
+          padding: 16px 14px;
           box-sizing: border-box;
+          border-left: 6px solid rgba(255, 255, 255, 0.95);
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+          overflow: hidden;
+        }}
+
+        .card .item::before {{
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(140deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02));
+          pointer-events: none;
         }}
 
         .item:hover {{
-          transform: scale(0.98);
+          transform: translateY(-2px) scale(0.992);
           transition: all 0.3s;
         }}
 
@@ -1327,10 +1521,35 @@ def build_poll_cards_html(rows):
           margin-bottom: 8px;
         }}
 
-        .item--1 {{ background: #c7c7ff; }}
-        .item--2 {{ background: #ffd8be; }}
-        .item--3 {{ background: #a9ecbf; }}
-        .item--4 {{ background: #f3bbe1; }}
+        .item > * {{
+          position: relative;
+          z-index: 1;
+        }}
+
+        .item--1 {{
+          background: linear-gradient(135deg, #ce1126 0%, #ef4444 100%);
+          color: #fff8eb;
+        }}
+
+        .item--2 {{
+          background: linear-gradient(135deg, #002395 0%, #2563eb 100%);
+          color: #eff6ff;
+        }}
+
+        .item--3 {{
+          background: linear-gradient(135deg, #007a4d 0%, #16a34a 100%);
+          color: #f0fdf4;
+        }}
+
+        .item--4 {{
+          background: linear-gradient(135deg, #ffb612 0%, #f59e0b 100%);
+          color: #1f2937;
+        }}
+
+        .item--5 {{
+          background: linear-gradient(135deg, #111827 0%, #000000 100%);
+          color: #f8fafc;
+        }}
 
         .quantity {{
           font-size: 20px;
@@ -1339,12 +1558,42 @@ def build_poll_cards_html(rows):
           word-break: break-word;
         }}
 
+        .store-link {{
+          color: inherit;
+          text-decoration: none;
+          border-bottom: 1px solid currentColor;
+          padding-bottom: 1px;
+        }}
+
+        .store-link:hover {{
+          opacity: 0.9;
+        }}
+
+        .store-link__icon {{
+          font-size: 14px;
+        }}
+
         .metric-badge {{
           margin-top: 8px;
-          padding: 3px 9px;
+          padding: 4px 10px;
           border-radius: 999px;
-          background: rgba(15, 23, 42, 0.12);
-          color: #0f172a;
+          background: rgba(255, 255, 255, 0.18);
+          color: inherit;
+          font-size: 11px;
+          font-weight: 700;
+          border: 1px solid rgba(255,255,255,0.22);
+        }}
+
+        .visit-link {{
+          margin-top: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 10px;
+          border-radius: 999px;
+          background: rgba(255,255,255,0.92);
+          color: #111827;
+          text-decoration: none;
           font-size: 11px;
           font-weight: 700;
         }}
@@ -1352,24 +1601,23 @@ def build_poll_cards_html(rows):
         .text {{
           font-size: 13px;
           font-weight: 700;
-          margin-top: 4px;
+          margin-top: 8px;
         }}
 
-        .text--1 {{ color: rgba(149,149,255,1); }}
-        .text--2 {{ color: rgba(252,161,71,1); }}
-        .text--3 {{ color: rgba(66,193,110,1); }}
-        .text--4 {{ color: rgba(220,91,183,1); }}
+        .text--1, .text--2, .text--3, .text--5 {{ color: rgba(255,255,255,0.95); }}
+        .text--4 {{ color: rgba(17,24,39,0.9); }}
 
         .meta {{
           font-size: 11px;
           line-height: 1.45;
-          color: #334155;
+          color: inherit;
+          opacity: 0.96;
           margin-top: 4px;
           overflow-wrap: anywhere;
         }}
 
         .meta strong {{
-          color: #0f172a;
+          color: inherit;
         }}
       </style>
     </html>
@@ -1670,6 +1918,7 @@ if ads_data_changed:
     save_json_list(ADS_PATH, ads_data)
 
 # --- MAIN UI ---
+apply_south_africa_theme()
 st.title("National Dialog: South Africa")
 st.caption("A national platform to understand public preferences, retail habits, and service experiences across South Africa.")
 
