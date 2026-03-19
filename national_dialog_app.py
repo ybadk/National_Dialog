@@ -2450,15 +2450,9 @@ for idx, (tab, form) in enumerate(zip(form_tab, FORM_QUESTIONS)):
             province = st.text_input("Province", key=f"province_{idx}")
             city = st.text_input("City", key=f"city_{idx}")
             town = st.text_input("Town", key=f"town_{idx}")
-            service_rating = st.segmented_control(
-                SERVICE_STAR_RATING_LABEL,
-                STAR_RATING_OPTIONS,
-                selection_mode="single",
-                default=None,
-                format_func=format_star_rating_text,
-                key=f"service_rating_{idx}",
-                help="Required: choose a star rating before you submit this form.",
-            )
+            st.markdown(f"**{SERVICE_STAR_RATING_LABEL}**")
+            feedback_val = st.feedback("stars", key=f"service_rating_{idx}")
+            service_rating = (feedback_val + 1) if feedback_val is not None else None
             responses["Gender"] = gender
             responses["Age"] = age
             responses["Province"] = province

@@ -1,17 +1,19 @@
-name,phone,email,timestamp
-Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-21T17:15:00.944618
-Kgothatso Thooe,0796755095,kgothatsothooe@gmail.com,2025-07-21T17:32:36.771498
-Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-21T17:37:14.929693
-Kgothatso Thooe,0824926346,kgothatsothooe@gmail.com,2025-07-21T17:40:29.524114
-Kgothatso Thooe,0685412535,kgothatsothooe@gmail.com,2025-07-21T17:53:57.686478
-Kgothatso Thooe,0798586542,kgothatsothooe@gmail.com,2025-07-21T18:12:56.271195
-Thapelo Thooe,0684023284,kgothatsothooe@gmail.com,2025-07-21T18:15:16.401799
-Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-21T18:20:05.408318
-Kgothatso Thooe,0751245698,kgothatsothooe@gmail.com,2025-07-21T18:30:41.497505
-Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-22T09:34:19.303220
-Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-23T01:01:36.279196
-Thapelo Thooe,0852658412,kgothatsothooe@gmail.com,2025-07-23T01:11:20.298508
-Kgothatso Thooe,0815545465,kgothatsothooe@gmail.com,2025-07-24T02:10:15.003040
-thapelo,0684023284,kgothatsothooe@gmail.com,2026-03-15T15:14:45.482777
-thapelo,0651521245,kgothatsothooe@gmail.com,2026-03-15T15:44:16.730026
-Thapelo,0654121232,kgothatsothooe@gmail.com,2026-03-15T17:08:20.752209
+name,phone,email,timestamp,gender
+Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-21T17:15:00.944618,
+Kgothatso Thooe,0796755095,kgothatsothooe@gmail.com,2025-07-21T17:32:36.771498,
+Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-21T17:37:14.929693,
+Kgothatso Thooe,0824926346,kgothatsothooe@gmail.com,2025-07-21T17:40:29.524114,
+Kgothatso Thooe,0685412535,kgothatsothooe@gmail.com,2025-07-21T17:53:57.686478,
+Kgothatso Thooe,0798586542,kgothatsothooe@gmail.com,2025-07-21T18:12:56.271195,
+Thapelo Thooe,0684023284,kgothatsothooe@gmail.com,2025-07-21T18:15:16.401799,
+Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-21T18:20:05.408318,
+Kgothatso Thooe,0751245698,kgothatsothooe@gmail.com,2025-07-21T18:30:41.497505,
+Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-22T09:34:19.303220,
+Kgothatso Thooe,0815548040,kgothatsothooe@gmail.com,2025-07-23T01:01:36.279196,
+Thapelo Thooe,0852658412,kgothatsothooe@gmail.com,2025-07-23T01:11:20.298508,
+Kgothatso Thooe,0815545465,kgothatsothooe@gmail.com,2025-07-24T02:10:15.003040,
+thapelo,0684023284,kgothatsothooe@gmail.com,2026-03-15T15:14:45.482777,
+thapelo,0651521245,kgothatsothooe@gmail.com,2026-03-15T15:44:16.730026,
+Thapelo,0654121232,kgothatsothooe@gmail.com,2026-03-15T17:08:20.752209,
+Kgothatso,0684000284,kgothatsothooe@gmail.com,2026-03-19T14:07:54.945138,Male
+Kgothatso,0684023284,kgothatsothooe@gmail.com,2026-03-19T15:10:57.688458,Female
