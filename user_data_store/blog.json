@@ -191,5 +191,27 @@
       "What one improvement would increase your spending or loyalty?": "Checkers should come to the township"
     },
     "timestamp": "2026-03-15T17:09:42.065245"
+  },
+  {
+    "user": {
+      "name": "0821234567",
+      "gender": "Prefer not to say",
+      "phone": "0825452121",
+      "email": "kgkkg@gmail.com"
+    },
+    "form": "Customer Spending Behaviour",
+    "responses": {
+      "Gender": "Prefer not to say",
+      "Age": 33,
+      "Province": "Gauteng",
+      "City": "Pretoria",
+      "Town": "Mabopane",
+      "Rate the service using stars": "\u2605\u2605\u2605\u2605\u2605",
+      "Where do you complete most of your purchases?": "Online",
+      "What most influences your buying decision before checkout?": "Customer service",
+      "Which brand or retailer currently earns the most trust from you, and why?": "Temu - This company is reliable",
+      "How important are promotions, loyalty rewards, and bundled offers to repeat purchases?": "Very Important"
+    },
+    "timestamp": "2026-03-19T17:33:46.191138"
   }
 ]

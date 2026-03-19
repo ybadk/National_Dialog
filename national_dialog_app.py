@@ -625,6 +625,7 @@ def build_ad_showcase_html(ads):
     for idx, ad in enumerate(reversed(ads)):
         theme_index = (idx % 5) + 1
         media_kind, media_uri = get_media_data_uri(ad.get("media"))
+        ad_id = escape(str(ad.get("ad_id", "")))
         
         price = ad.get("price") or "Request"
         location = ad.get("location") or "SA"
@@ -649,24 +650,28 @@ def build_ad_showcase_html(ads):
 
         action_url, action_label = get_ad_action(ad)
         action_text = action_label if action_url else "Go"
-        link_attrs = f' href="{escape(action_url, quote=True)}" target="_blank"' if action_url else ""
-        button_tag = "a" if action_url else "div"
-
+        
         cards.append(
             f'''
-            <{button_tag} class="card theme-{theme_index}"{link_attrs}>
+            <div class="card theme-{theme_index}">
               {media_markup}
               <div class="card-content">
                 <p class="card-title">{title}</p>
                 <div class="details-container">
                   <div class="detail-row"><span>{price}</span><span>•</span><span>{location}</span></div>
                 </div>
-                <div class="card-btn">
-                  {action_icon}
-                  <span class="card-btn-text">{escape(action_text)}</span>
+                <div class="card-btn-row">
+                  <a class="card-btn action-btn" href="{escape(action_url or '#', quote=True)}" target="_blank">
+                    {action_icon}
+                    <span class="card-btn-text">{escape(action_text)}</span>
+                  </a>
+                  <a class="card-btn feed-btn" href="#blog-ad-{ad_id}" target="_top" onclick="window.parent.location.hash='blog-ad-{ad_id}'; return true;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width:10px;height:10px;fill:currentColor;"><path d="M448 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h384c35.35 0 64-28.65 64-64V96c0-35.35-28.65-64-64-64zM256 416H96v-32h160v32zm160-96H96v-32h320v32zm0-96H96v-32h320v32zm0-96H96V96h320v32z"/></svg>
+                    <span class="card-btn-text">Feed</span>
+                  </a>
                 </div>
               </div>
-            </{button_tag}>
+            </div>
             '''
         )
 
@@ -689,15 +694,17 @@ def build_ad_showcase_html(ads):
         .card {{
           display: flex; flex-direction: column; background: #fff; border-radius: 12px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.06); overflow: hidden; transition: transform 0.3s ease;
-          cursor: pointer; padding: 8px; text-decoration: none; border-top: 4px solid var(--accent);
-          height: 240px; box-sizing: border-box; position: relative;
+          padding: 10px; text-decoration: none; border-top: 4px solid var(--accent);
+          height: 250px; box-sizing: border-box; position: relative;
         }}
         .card:hover {{ transform: scale(1.03); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }}
+        
         .theme-1 {{ --accent: #ce1126; }} .theme-2 {{ --accent: #002395; }} 
         .theme-3 {{ --accent: #007a4d; }} .theme-4 {{ --accent: #ffb612; }} 
         .theme-5 {{ --accent: #111827; }}
+        
         .card-image-container {{
-          width: 100%; height: 100px; border-radius: 8px; margin-bottom: 6px;
+          width: 100%; height: 100px; border-radius: 8px; margin-bottom: 8px;
           overflow: hidden; background: #f1f5f9; display: flex; align-items: center; justify-content: center;
           position: relative; border: 1px solid #e2e8f0;
         }}
@@ -705,28 +712,38 @@ def build_ad_showcase_html(ads):
         .media-overlay {{
           position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex;
           align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;
-          color: white; font-weight: 600; font-size: 10px;
+          color: white; font-weight: 600; font-size: 10px; pointer-events: none;
         }}
         .card:hover .media-overlay {{ opacity: 1; }}
+        
         .card-content {{ display: flex; flex-direction: column; gap: 4px; flex-grow: 1; }}
         .card-title {{
           margin: 0; font-size: 13px; font-weight: 700; color: #1e293b;
           display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
         }}
         .details-container {{
-          background: #f8fafc; padding: 4px 6px; border-radius: 4px; font-size: 10px;
-          font-weight: 600; color: #64748b;
+          background: #f8fafc; padding: 4px 6px; border-radius: 6px; font-size: 10px;
+          font-weight: 600; color: #64748b; margin-bottom: 4px;
         }}
         .detail-row {{ display: flex; justify-content: space-between; }}
-        .card-btn {{
-          background: var(--accent); color: #fff; width: 22px; height: 22px;
-          border-radius: 20px; display: flex; align-items: center; justify-content: center;
-          transition: all 0.4s ease; margin-top: auto; align-self: flex-start;
-          overflow: hidden; gap: 4px; font-size: 11px;
+        
+        .card-btn-row {{
+          display: flex; gap: 6px; margin-top: auto;
         }}
-        .card:hover .card-btn {{ width: 100%; height: 26px; border-radius: 6px; }}
-        .card-btn-text {{ display: none; white-space: nowrap; }}
-        .card:hover .card-btn-text {{ display: inline; }}
+        
+        .card-btn {{
+          background: #f1f5f9; color: #64748b; height: 26px; flex: 1;
+          border-radius: 6px; display: flex; align-items: center; justify-content: center;
+          transition: all 0.3s ease; text-decoration: none; border: 1px solid #e2e8f0;
+          gap: 4px; font-size: 10px; font-weight: 700;
+        }}
+        
+        .action-btn {{ background: var(--accent); color: #fff; border: none; }}
+        .action-btn:hover {{ background: #1e293b; color: #fff; }}
+        .feed-btn:hover {{ background: #e2e8f0; color: #1e293b; }}
+        
+        .card-btn svg {{ width: 12px; height: 12px; }}
+        .card-btn-text {{ white-space: nowrap; }}
       </style>
     </html>
     '''
