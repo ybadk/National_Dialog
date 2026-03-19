@@ -14,5 +14,22 @@
     "price": "",
     "location": "",
     "whatsapp": ""
+  },
+  {
+    "ad_id": "ad-b87b7b7ac5",
+    "title": "ad1",
+    "description": "product test",
+    "gender": "Male",
+    "price": "R1000",
+    "location": "Tshwane",
+    "whatsapp": "0652528787",
+    "link": "http://product.com",
+    "media": {
+      "path": "user_data_store/media/ads/4f8990af0d5b478596255df303f92d7a.mp4",
+      "name": "gameofthrones.mp4",
+      "kind": "video"
+    },
+    "author": "test_user",
+    "timestamp": "2026-03-19 16:18"
   }
 ]

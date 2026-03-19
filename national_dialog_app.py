@@ -590,23 +590,10 @@ def prepare_ads_data(ads):
 
 
 def render_ad_card(ad):
-    with st.container(border=True):
-        st.caption("Sponsored preview")
-        st.markdown(f"#### {ad.get('title', 'Sponsored Ad')}")
-        if ad.get("description"):
-            st.write(ad["description"])
-        st.markdown(f"**Price:** {ad.get('price') or 'Not provided'}")
-        st.markdown(f"**Location:** {ad.get('location') or 'Not provided'}")
-        st.markdown(f"**WhatsApp:** {ad.get('whatsapp') or 'Not provided'}")
-        st.caption(f"Posted by {ad.get('author', 'Community member')} • {ad.get('timestamp', 'Unknown time')}")
-        st.markdown(
-            f"<a href=\"#blog-ad-{escape(ad.get('ad_id', ''), quote=True)}\">Jump to this ad in the blog feed</a>",
-            unsafe_allow_html=True,
-        )
-
-        action_url, action_label = get_ad_action(ad)
-        if action_url:
-            st.markdown(f"[{action_label}]({action_url})")
+    st.caption("Live Preview (as it will appear in the feed)")
+    # We use the same HTML generator for consistency
+    ad_html = build_blog_ad_card_html(ad)
+    st.components.v1.html(ad_html, height=650, scrolling=True)
 
 
 def get_media_data_uri(media):
@@ -645,48 +632,77 @@ def build_ad_showcase_html(ads):
     for idx, ad in enumerate(reversed(ads)):
         theme_index = (idx % 5) + 1
         media_kind, media_uri = get_media_data_uri(ad.get("media"))
+        
+        # Product details
+        price = ad.get("price") or "Price on Request"
+        location = ad.get("location") or "South Africa"
+        whatsapp = ad.get("whatsapp") or "No contact"
+        timestamp = ad.get("timestamp", "Just now")
+        title = escape(ad.get("title", "Sponsored Ad"))
+        
         if media_uri and media_kind == "video":
             media_markup = (
-                f'<div class="card-image-container media-kind-video">'
-                f'<video class="card-media card-video-preview" muted playsinline preload="auto" '
-                f'onloadeddata="if(this.currentTime < 0.1) this.currentTime = 0.1;" src="{media_uri}"></video>'
-                f'<button class="card-play-overlay" type="button" '
-                f'onclick="const video=this.previousElementSibling; video.controls=true; video.muted=false; video.play(); this.style.opacity=0; this.style.pointerEvents=\'none\';">'
-                f'<span class="card-play-overlay-icon">▶</span><span>Play Ad</span></button>'
-                f'<div class="card-media-badge"><span class="card-media-badge-icon">▶</span>'
-                f'<span>Video Preview</span></div></div>'
+                f'<div class="card-image-container">'
+                f'<video class="card-media" muted playsinline preload="metadata" post src="{media_uri}"></video>'
+                f'<div class="media-overlay"><span class="media-icon">▶</span> Watch</div>'
+                f'</div>'
             )
         elif media_uri:
             media_markup = (
-                f'<div class="card-image-container"><img class="card-media" '
-                f'src="{media_uri}" alt="{escape(ad.get("title", "Ad"))}"></div>'
+                f'<div class="card-image-container">'
+                f'<img class="card-media" src="{media_uri}" alt="{title}">'
+                f'<div class="media-overlay"><span class="media-icon">👁</span> View</div>'
+                f'</div>'
             )
         else:
-            media_markup = fallback_media
+            media_markup = (
+                f'<div class="card-image-container">'
+                f'<div class="fallback-media">ADS</div>'
+                f'</div>'
+            )
 
-        action_text = "Visit Advertiser" if ad.get("link") else "Sponsored Ad"
-        button_tag = "a" if ad.get("link") else "div"
-        link_attrs = ""
-        if ad.get("link"):
-            safe_link = escape(ad["link"], quote=True)
-            link_attrs = f' href="{safe_link}" target="_blank" rel="noopener noreferrer"'
+        action_url, action_label = get_ad_action(ad)
+        action_text = action_label if action_url else "Visit Merchant"
+        link_attrs = f' href="{escape(action_url, quote=True)}" target="_blank" rel="noopener noreferrer"' if action_url else ""
+        button_tag = "a" if action_url else "div"
 
         cards.append(
             f'''
-            <div class="card theme-{theme_index}">
+            <{button_tag} class="card theme-{theme_index}"{link_attrs}>
               {media_markup}
-              <p class="card-title">{escape(ad.get("title", "Sponsored Ad"))}</p>
-              <p class="card-des">{escape(ad.get("description", "Community promotion"))}</p>
-              <{button_tag} class="card-btn"{link_attrs}>
-                {action_icon}
-                <span class="card-btn-text">{action_text}</span>
-              </{button_tag}>
-            </div>
+              <div class="card-content">
+                <p class="card-title">{title}</p>
+                <p class="card-des">{escape(ad.get("description", ""))[:35]}...</p>
+                <div class="details-container">
+                  <div class="detail-row">
+                    <span class="detail-label">Price:</span>
+                    <span class="detail-value">{price}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Loc:</span>
+                    <span class="detail-value">{location}</span>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <span class="footer-tag">💬 {whatsapp}</span>
+                  <span class="footer-tag">🕒 {timestamp}</span>
+                </div>
+                <div class="card-btn">
+                  {action_icon}
+                  <span class="card-btn-text">{escape(action_text)}</span>
+                </div>
+              </div>
+            </{button_tag}>
             '''
         )
 
     return f'''
     <html>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+      </head>
       <body>
         <div class="ad-scroll-wrap">{"".join(cards)}</div>
       </body>
@@ -694,7 +710,7 @@ def build_ad_showcase_html(ads):
         body {{
           margin: 0;
           padding: 0;
-          font-family: Arial, sans-serif;
+          font-family: 'Outfit', sans-serif;
           background: transparent;
         }}
 
@@ -702,139 +718,120 @@ def build_ad_showcase_html(ads):
           display: flex;
           gap: 16px;
           overflow-x: auto;
-          padding: 8px 6px 16px;
+          padding: 20px 10px 30px;
           scroll-behavior: smooth;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }}
+        .ad-scroll-wrap::-webkit-scrollbar {{ display: none; }}
 
         .card {{
           display: flex;
           flex-direction: column;
-          flex: 0 0 250px;
-          min-height: 315px;
-          background: linear-gradient(180deg, var(--card-soft), #ffffff);
-          border-radius: 16px;
-          box-shadow: 0px 12px 18px rgba(15, 23, 42, 0.10),
-            -4px -4px 12px rgba(15, 23, 42, 0.04);
+          flex: 0 0 230px;
+          width: 230px;
+          height: 340px;
+          background-color: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.08);
           overflow: hidden;
-          transition: all 0.3s;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           cursor: pointer;
           box-sizing: border-box;
-          padding: 12px;
-          border-top: 5px solid var(--card-accent);
+          padding: 10px;
+          text-decoration: none;
+          position: relative;
+          border-top: 5px solid var(--accent);
         }}
 
         .card:hover {{
-          transform: translateY(-10px);
-          background: linear-gradient(180deg, var(--card-hover-soft), #ffffff);
-          box-shadow: 0px 22px 28px var(--card-hover-shadow),
-            -4px -4px 12px rgba(15, 23, 42, 0.06);
+          transform: translateY(-12px);
+          box-shadow: 0px 20px 30px rgba(0, 0, 0, 0.12);
         }}
 
-        .theme-1 {{ --card-accent: #ce1126; --card-accent-soft: #ef4444; --card-soft: #fff1f2; --card-hover-soft: #ffe4e6; --card-text: #43121a; --card-button-text: #ffffff; --card-hover-shadow: rgba(206, 17, 38, 0.22); }}
-        .theme-2 {{ --card-accent: #002395; --card-accent-soft: #2563eb; --card-soft: #eff6ff; --card-hover-soft: #dbeafe; --card-text: #13233f; --card-button-text: #ffffff; --card-hover-shadow: rgba(0, 35, 149, 0.20); }}
-        .theme-3 {{ --card-accent: #007a4d; --card-accent-soft: #16a34a; --card-soft: #f0fdf4; --card-hover-soft: #dcfce7; --card-text: #113126; --card-button-text: #ffffff; --card-hover-shadow: rgba(0, 122, 77, 0.20); }}
-        .theme-4 {{ --card-accent: #d39b00; --card-accent-soft: #ffb612; --card-soft: #fff8e1; --card-hover-soft: #fef3c7; --card-text: #483100; --card-button-text: #111827; --card-hover-shadow: rgba(255, 182, 18, 0.22); }}
-        .theme-5 {{ --card-accent: #111827; --card-accent-soft: #374151; --card-soft: #f3f4f6; --card-hover-soft: #e5e7eb; --card-text: #111827; --card-button-text: #ffffff; --card-hover-shadow: rgba(17, 24, 39, 0.24); }}
+        .theme-1 {{ --accent: #ce1126; --accent-soft: rgba(206, 17, 38, 0.1); }}
+        .theme-2 {{ --accent: #002395; --accent-soft: rgba(0, 35, 149, 0.1); }}
+        .theme-3 {{ --accent: #007a4d; --accent-soft: rgba(0, 122, 77, 0.1); }}
+        .theme-4 {{ --accent: #ffb612; --accent-soft: rgba(255, 182, 18, 0.1); }}
+        .theme-5 {{ --accent: #111827; --accent-soft: rgba(17, 24, 39, 0.1); }}
 
         .card-image-container {{
           width: 100%;
-          height: 180px;
-          border-radius: 14px;
-          margin-bottom: 12px;
+          height: 150px;
+          border-radius: 8px;
+          margin-bottom: 10px;
           overflow: hidden;
-          background-color: var(--card-soft);
+          background-color: #f8fafc;
           display: flex;
           align-items: center;
           justify-content: center;
           position: relative;
-          border: 1px solid rgba(255, 255, 255, 0.7);
+          border: 1px solid #e2e8f0;
         }}
 
         .card-media {{
           width: 100%;
           height: 100%;
           object-fit: cover;
+          transition: transform 0.5s;
         }}
 
-        .card-video-preview {{
-          background: #0f172a;
+        .card:hover .card-media {{
+          transform: scale(1.08);
         }}
 
-        .card-image-container.media-kind-video::after {{
-          content: "";
+        .media-overlay {{
           position: absolute;
           inset: 0;
-          background: linear-gradient(to top, rgba(15, 23, 42, 0.68), rgba(15, 23, 42, 0.12));
-          pointer-events: none;
-        }}
-
-        .card-play-overlay {{
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          z-index: 2;
-          border: none;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.92);
-          color: #0f172a;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 18px;
-          font-size: 13px;
-          font-weight: 700;
-          cursor: pointer;
-          box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
-          transition: transform 0.2s ease, background 0.2s ease;
-        }}
-
-        .card-play-overlay:hover {{
-          transform: translate(-50%, -50%) scale(1.04);
-          background: linear-gradient(90deg, #111827 0%, var(--card-accent) 58%, var(--card-accent-soft) 100%);
-          color: var(--card-button-text);
-        }}
-
-        .card-play-overlay-icon {{
-          display: inline-flex;
+          background: rgba(0,0,0,0.3);
+          display: flex;
           align-items: center;
           justify-content: center;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: var(--card-accent);
-          color: var(--card-button-text);
-          font-size: 12px;
-          line-height: 1;
-        }}
-
-        .card-media-badge {{
-          position: absolute;
-          left: 12px;
-          bottom: 12px;
-          z-index: 1;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 12px;
-          border-radius: 999px;
-          background: rgba(15, 23, 42, 0.84);
-          color: #ffffff;
-          font-size: 12px;
+          opacity: 0;
+          transition: opacity 0.3s;
+          color: white;
           font-weight: 700;
-          letter-spacing: 0.02em;
-          pointer-events: none;
+          font-size: 14px;
         }}
 
-        .card-media-badge-icon {{
+        .card:hover .media-overlay {{
+          opacity: 1;
+        }}
+
+        .media-icon {{
+          font-size: 18px;
+          margin-right: 6px;
+        }}
+
+        .card-content {{
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }}
+
+        .card-title {{
+          margin: 0;
+          font-size: 16px;
+          font-weight: 700;
+          color: #1e293b;
+          -webkit-line-clamp: 1;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }}
+
+        .card-des {{
+          margin: 0;
           font-size: 12px;
-          line-height: 1;
+          color: #64748b;
+          -webkit-line-clamp: 1;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }}
 
-        .video-icon {{
-          width: 40px;
-          height: 40px;
-          color: #ffffff;
+        .details-container {{
+          margin-top: 8px;
         }}
 
         .card-title {{
@@ -914,291 +911,263 @@ def build_ad_showcase_html(ads):
 def build_blog_ad_card_html(ad):
     title = escape(str(ad.get("title", "Sponsored Ad")))
     description = escape(str(ad.get("description", "Community promotion")))
-    price = escape(str(ad.get("price") or "Price on request"))
-    location = escape(str(ad.get("location") or "Location not provided"))
-    whatsapp = escape(str(ad.get("whatsapp") or "WhatsApp not provided"))
-    author = escape(str(ad.get("author") or "Community member"))
-    timestamp = escape(str(ad.get("timestamp") or "Unknown time"))
+    price = escape(str(ad.get("price") or "Price on Request"))
+    location = escape(str(ad.get("location") or "South Africa"))
+    whatsapp = escape(str(ad.get("whatsapp") or "Contact for info"))
+    author = escape(str(ad.get("author") or "Member"))
+    timestamp = escape(str(ad.get("timestamp") or "Just now"))
     media_kind, media_uri = get_media_data_uri(ad.get("media"))
+    
+    action_icon = """
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 384 512" stroke-width="0" fill="currentColor" stroke="currentColor">
+      <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"></path>
+    </svg>
+    """
 
-    media_markup = ""
     if media_uri and media_kind == "video":
         media_markup = (
-            f'<div class="ad-media-wrap ad-video-wrap">'
-            f'<div class="ad-video-toolbar"><span class="ad-video-chip">Video Ad</span>'
-            f'<span class="ad-video-note">Press play to preview this ad</span></div>'
-            f'<div class="ad-video-stage">'
-            f'<video class="ad-media ad-video-player" controls playsinline preload="auto" '
-            f'onloadeddata="if(this.currentTime < 0.1) this.currentTime = 0.1;" src="{media_uri}"></video>'
-            f'<button class="ad-video-overlay" type="button" '
-            f'onclick="const video=this.previousElementSibling; video.play(); this.style.opacity=0; this.style.pointerEvents=\'none\';">'
-            f'<span class="ad-video-overlay-icon">▶</span><span>Play Video Ad</span></button>'
-            f'</div></div>'
+            f'<div class="card-image-container">'
+            f'<video class="card-media" controls playsinline preload="metadata" src="{media_uri}"></video>'
+            f'<div class="media-overlay"><span class="media-icon">▶</span> Watch Video</div>'
+            f'</div>'
         )
     elif media_uri:
-        media_markup = f'<div class="ad-media-wrap"><img class="ad-media" src="{media_uri}" alt="{title}"></div>'
-
-    action_url, action_label = get_ad_action(ad)
-    if action_url:
-        safe_url = escape(action_url, quote=True)
-        button_markup = (
-            f'<a class="card-button" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
-            f'{escape(action_label)}</a>'
+        media_markup = (
+            f'<div class="card-image-container">'
+            f'<img class="card-media" src="{media_uri}" alt="{title}">'
+            f'<div class="media-overlay"><span class="media-icon">👁</span> View Full Image</div>'
+            f'</div>'
         )
     else:
-        button_markup = '<button class="card-button" disabled>More info</button>'
+        media_markup = '<div class="card-image-container"><div class="fallback-media">AD</div></div>'
+
+    action_url, action_label = get_ad_action(ad)
+    action_text = action_label if action_url else "Visit Merchant"
+    link_attrs = f' href="{escape(action_url, quote=True)}" target="_blank" rel="noopener noreferrer"' if action_url else ""
+    button_tag = "a" if action_url else "div"
 
     return f'''
     <html>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+      </head>
       <body>
-        <div class="card">
-          <div class="card-details">
-            <p class="ad-tag">Sponsored Ad</p>
+        <{button_tag} class="card"{link_attrs}>
+          <div class="card-content">
+            <p class="ad-tag">Sponsored • {timestamp}</p>
             {media_markup}
-            <p class="text-title">{title}</p>
-            <p class="text-body">{description}</p>
-            <div class="meta-list">
-              <p><strong>Price:</strong> {price}</p>
-              <p><strong>Location:</strong> {location}</p>
-              <p><strong>WhatsApp:</strong> {whatsapp}</p>
-              <p><strong>Posted by:</strong> {author}</p>
-              <p><strong>Published:</strong> {timestamp}</p>
+            <p class="card-title">{title}</p>
+            <p class="card-des">{description}</p>
+            
+            <div class="details-container">
+              <div class="detail-row">
+                <span class="detail-label">📍 Location:</span>
+                <span class="detail-value">{location}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">💰 Price:</span>
+                <span class="detail-value">{price}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">👤 Posted by:</span>
+                <span class="detail-value">{author}</span>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <span class="footer-tag">💬 {whatsapp}</span>
+            </div>
+
+            <div class="card-btn">
+              {action_icon}
+              <span class="card-btn-text">{escape(action_text)}</span>
             </div>
           </div>
-          {button_markup}
-        </div>
+        </{button_tag}>
       </body>
       <style>
         body {{
           margin: 0;
-          padding: 8px 2px 28px;
+          padding: 8px 12px 24px;
           background: transparent;
-          font-family: Arial, sans-serif;
+          font-family: 'Outfit', sans-serif;
         }}
 
         .card {{
-          width: 100%;
-          min-height: 420px;
-          border-radius: 20px;
-          background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-          position: relative;
-          padding: 1.8rem;
-          border: 1px solid rgba(17, 24, 39, 0.08);
-          transition: 0.5s ease-out;
-          overflow: visible;
-          box-sizing: border-box;
-          box-shadow: 0 18px 36px rgba(15, 23, 42, 0.10);
-        }}
-
-        .card::before {{
-          content: "";
-          position: absolute;
-          inset: 0 0 auto 0;
-          height: 6px;
-          border-radius: 20px 20px 0 0;
-          background: linear-gradient(90deg, #111827 0%, #ce1126 22%, #002395 48%, #007a4d 72%, #ffb612 100%);
-        }}
-
-        .card-details {{
-          color: #111827;
-          height: 100%;
-          gap: 0.8em;
-          display: grid;
-          align-content: start;
-        }}
-
-        .ad-tag {{
-          margin: 0;
-          font-size: 0.8rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: #007a4d;
-        }}
-
-        .ad-media-wrap {{
-          width: 100%;
-          min-height: 180px;
-          border-radius: 16px;
-          overflow: hidden;
-          background: linear-gradient(135deg, #eff6ff 0%, #fff8e1 100%);
-          position: relative;
-          border: 1px solid rgba(17, 24, 39, 0.08);
-        }}
-
-        .ad-media {{
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
           display: block;
-        }}
-
-        .ad-video-wrap {{
-          min-height: 0;
-          background: #0f172a;
-        }}
-
-        .ad-video-toolbar {{
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.7rem 0.9rem;
-          background: linear-gradient(90deg, #111827 0%, #002395 35%, #007a4d 70%, #ffb612 100%);
-          color: #ffffff;
-          font-size: 0.82rem;
-          flex-wrap: wrap;
-        }}
-
-        .ad-video-chip {{
-          display: inline-flex;
-          align-items: center;
-          padding: 0.22rem 0.7rem;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.15);
-          font-weight: 700;
-          letter-spacing: 0.02em;
-        }}
-
-        .ad-video-note {{
-          color: #dbeafe;
-          font-weight: 500;
-        }}
-
-        .ad-video-player {{
-          height: 220px;
-          background: #000000;
-        }}
-
-        .ad-video-stage {{
-          position: relative;
-          height: 220px;
+          width: 100%;
+          background-color: #ffffff;
+          border-radius: 24px;
+          box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.08);
           overflow: hidden;
-          background: #000000;
-        }}
-
-        .ad-video-overlay {{
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          z-index: 2;
-          border: none;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.96);
-          color: #0f172a;
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          padding: 14px 20px;
-          font-size: 0.95rem;
-          font-weight: 700;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           cursor: pointer;
-          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
-          transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-        }}
-
-        .ad-video-overlay:hover {{
-          transform: translate(-50%, -50%) scale(1.04);
-          background: linear-gradient(90deg, #111827 0%, #ce1126 24%, #002395 50%, #007a4d 76%, #ffb612 100%);
-          color: #ffffff;
-          box-shadow: 0 16px 32px rgba(17, 24, 39, 0.28), 0 10px 24px rgba(0, 35, 149, 0.16);
-        }}
-
-        .ad-video-overlay:hover .ad-video-overlay-icon {{
-          background: rgba(255, 255, 255, 0.18);
-          color: #ffffff;
-        }}
-
-        .ad-video-overlay-icon {{
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          background: #007a4d;
-          color: #ffffff;
-          font-size: 15px;
-          line-height: 1;
-        }}
-
-        .text-title {{
-          margin: 0;
-          font-size: 1.5em;
-          font-weight: bold;
-          line-height: 1.2;
-          overflow-wrap: anywhere;
-        }}
-
-        .text-body {{
-          margin: 0;
-          color: #475569;
-          font-size: 0.98rem;
-          line-height: 1.5;
-          overflow-wrap: anywhere;
-        }}
-
-        .meta-list {{
-          display: grid;
-          gap: 0.4rem;
-          margin-bottom: 3rem;
-        }}
-
-        .meta-list p {{
-          margin: 0;
-          font-size: 0.94rem;
-          color: #1f2937;
-          line-height: 1.45;
-          overflow-wrap: anywhere;
-        }}
-
-        .card-button {{
-          transform: translate(-50%, 125%);
-          width: 60%;
-          border-radius: 1rem;
-          border: none;
-          background: linear-gradient(90deg, #ce1126 0%, #002395 34%, #007a4d 68%, #ffb612 100%);
-          color: #fff;
-          font-size: 1rem;
-          padding: 0.5rem 1rem;
-          position: absolute;
-          left: 50%;
-          bottom: 0;
-          opacity: 0;
-          transition: transform 0.3s ease-out, opacity 0.3s ease-out, background 0.2s ease, box-shadow 0.2s ease;
-          text-decoration: none;
-          text-align: center;
           box-sizing: border-box;
+          text-decoration: none;
+          border-top: 8px solid #002395;
+          margin-bottom: 24px;
+          padding: 0;
         }}
 
         .card:hover {{
-          border-color: rgba(206, 17, 38, 0.24);
-          box-shadow: 0 18px 34px rgba(17, 24, 39, 0.15),
-            0 18px 28px rgba(0, 35, 149, 0.10),
-            0 12px 22px rgba(0, 122, 77, 0.08),
-            0 8px 18px rgba(255, 182, 18, 0.08);
+          transform: translateY(-8px);
+          box-shadow: 0px 20px 30px rgba(0, 0, 0, 0.12);
         }}
 
-        .card:hover .card-button {{
-          transform: translate(-50%, 50%);
+        .card-content {{
+          padding: 32px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }}
+
+        .ad-tag {{
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          color: #94a3b8;
+          margin: 0;
+          letter-spacing: 0.1em;
+        }}
+
+        .card-image-container {{
+          width: 100%;
+          max-height: 550px;
+          border-radius: 16px;
+          overflow: hidden;
+          background-color: #f8fafc;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          border: 1px solid #e2e8f0;
+        }}
+
+        .card-media {{
+          width: 100%;
+          border-radius: inherit;
+          transition: transform 0.5s;
+        }}
+
+        .card:hover .card-media {{
+          transform: scale(1.02);
+        }}
+
+        .media-overlay {{
+          position: absolute;
+          inset: 0;
+          background: rgba(0,0,0,0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.3s;
+          color: white;
+          font-weight: 700;
+          font-size: 18px;
+          pointer-events: none;
+        }}
+
+        .card:hover .media-overlay {{
           opacity: 1;
         }}
 
-        .card-button:hover {{
-          background: linear-gradient(90deg, #111827 0%, #ce1126 24%, #002395 50%, #007a4d 76%, #ffb612 100%);
-          box-shadow: 0 14px 28px rgba(17, 24, 39, 0.20), 0 10px 20px rgba(0, 35, 149, 0.12);
+        .media-icon {{
+          font-size: 24px;
+          margin-right: 10px;
         }}
 
-        .card-button:disabled {{
-          background: #9ca3af;
-          cursor: not-allowed;
-          opacity: 1;
-          transform: translate(-50%, 50%);
+        .card-title {{
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+          color: #1e293b;
+          line-height: 1.2;
+        }}
+
+        .card-des {{
+          margin: 0;
+          font-size: 16px;
+          color: #475569;
+          line-height: 1.6;
+        }}
+
+        .details-container {{
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          padding: 20px;
+          background: #f1f5f9;
+          border-radius: 16px;
+          margin: 8px 0;
+        }}
+
+        .detail-row {{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }}
+
+        .detail-label {{
+          font-size: 13px;
+          color: #64748b;
+          font-weight: 600;
+        }}
+
+        .detail-value {{
+          font-size: 14px;
+          color: #1e293b;
+          font-weight: 700;
+        }}
+
+        .card-footer {{
+          display: flex;
+          justify-content: space-between;
+          font-size: 12px;
+          color: #64748b;
+          font-weight: 600;
+          padding-top: 8px;
+        }}
+
+        .card-btn {{
+          font-size: 15px;
+          color: #fff;
+          cursor: pointer;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: #002395;
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          overflow: hidden;
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          gap: 12px;
+          margin-top: 16px;
+          box-shadow: 0 4px 6px -1px rgba(0, 35, 149, 0.2);
+        }}
+
+        .card-btn:hover {{
+          width: 100%;
+          height: 48px;
+          box-shadow: 0 20px 25px -5px rgba(0, 35, 149, 0.3);
+        }}
+
+        .card-btn-text {{
+          display: none;
+          font-weight: 700;
+          white-space: nowrap;
+        }}
+
+        .card-btn:hover .card-btn-text {{
+          display: inline;
         }}
       </style>
     </html>
     '''
+
 
 
 def build_blog_post_card_html(entry):
