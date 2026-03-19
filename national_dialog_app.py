@@ -616,15 +616,8 @@ def get_media_data_uri(media):
 
 def build_ad_showcase_html(ads):
     cards = []
-    fallback_media = """
-    <div class="card-image-container">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="video-icon">
-        <path d="M464 384.39a32 32 0 01-13-2.77 15.77 15.77 0 01-2.71-1.54l-82.71-58.22A32 32 0 01352 295.7v-79.4a32 32 0 0113.58-26.16l82.71-58.22a15.77 15.77 0 012.71-1.54 32 32 0 0145 29.24v192.76a32 32 0 01-32 32zM268 400H84a68.07 68.07 0 01-68-68V180a68.07 68.07 0 0168-68h184.48A67.6 67.6 0 01336 179.52V332a68.07 68.07 0 01-68 68z"></path>
-      </svg>
-    </div>
-    """
     action_icon = """
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" class="play-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" style="width:10px;height:10px;fill:currentColor;">
       <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"></path>
     </svg>
     """
@@ -633,37 +626,30 @@ def build_ad_showcase_html(ads):
         theme_index = (idx % 5) + 1
         media_kind, media_uri = get_media_data_uri(ad.get("media"))
         
-        # Product details
-        price = ad.get("price") or "Price on Request"
-        location = ad.get("location") or "South Africa"
-        whatsapp = ad.get("whatsapp") or "No contact"
-        timestamp = ad.get("timestamp", "Just now")
-        title = escape(ad.get("title", "Sponsored Ad"))
+        price = ad.get("price") or "Request"
+        location = ad.get("location") or "SA"
+        title = escape(ad.get("title", "Ad"))
         
         if media_uri and media_kind == "video":
             media_markup = (
                 f'<div class="card-image-container">'
-                f'<video class="card-media" muted playsinline preload="metadata" post src="{media_uri}"></video>'
-                f'<div class="media-overlay"><span class="media-icon">▶</span> Watch</div>'
+                f'<video class="card-media" muted playsinline preload="metadata" src="{media_uri}"></video>'
+                f'<div class="media-overlay">▶ Watch</div>'
                 f'</div>'
             )
         elif media_uri:
             media_markup = (
                 f'<div class="card-image-container">'
                 f'<img class="card-media" src="{media_uri}" alt="{title}">'
-                f'<div class="media-overlay"><span class="media-icon">👁</span> View</div>'
+                f'<div class="media-overlay">👁 View</div>'
                 f'</div>'
             )
         else:
-            media_markup = (
-                f'<div class="card-image-container">'
-                f'<div class="fallback-media">ADS</div>'
-                f'</div>'
-            )
+            media_markup = '<div class="card-image-container"><div class="fallback-media">ADS</div></div>'
 
         action_url, action_label = get_ad_action(ad)
-        action_text = action_label if action_url else "Visit Merchant"
-        link_attrs = f' href="{escape(action_url, quote=True)}" target="_blank" rel="noopener noreferrer"' if action_url else ""
+        action_text = action_label if action_url else "Go"
+        link_attrs = f' href="{escape(action_url, quote=True)}" target="_blank"' if action_url else ""
         button_tag = "a" if action_url else "div"
 
         cards.append(
@@ -672,20 +658,8 @@ def build_ad_showcase_html(ads):
               {media_markup}
               <div class="card-content">
                 <p class="card-title">{title}</p>
-                <p class="card-des">{escape(ad.get("description", ""))[:35]}...</p>
                 <div class="details-container">
-                  <div class="detail-row">
-                    <span class="detail-label">Price:</span>
-                    <span class="detail-value">{price}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Loc:</span>
-                    <span class="detail-value">{location}</span>
-                  </div>
-                </div>
-                <div class="card-footer">
-                  <span class="footer-tag">💬 {whatsapp}</span>
-                  <span class="footer-tag">🕒 {timestamp}</span>
+                  <div class="detail-row"><span>{price}</span><span>•</span><span>{location}</span></div>
                 </div>
                 <div class="card-btn">
                   {action_icon}
@@ -699,210 +673,60 @@ def build_ad_showcase_html(ads):
     return f'''
     <html>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
       </head>
       <body>
-        <div class="ad-scroll-wrap">{"".join(cards)}</div>
+        <div class="ad-grid-wrap">{"".join(cards)}</div>
       </body>
       <style>
-        body {{
-          margin: 0;
-          padding: 0;
-          font-family: 'Outfit', sans-serif;
-          background: transparent;
+        body {{ margin: 0; padding: 0; font-family: 'Outfit', sans-serif; background: transparent; }}
+        .ad-grid-wrap {{
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+          gap: 12px;
+          padding: 8px;
         }}
-
-        .ad-scroll-wrap {{
-          display: flex;
-          gap: 16px;
-          overflow-x: auto;
-          padding: 20px 10px 30px;
-          scroll-behavior: smooth;
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }}
-        .ad-scroll-wrap::-webkit-scrollbar {{ display: none; }}
-
         .card {{
-          display: flex;
-          flex-direction: column;
-          flex: 0 0 230px;
-          width: 230px;
-          height: 340px;
-          background-color: #ffffff;
-          border-radius: 12px;
-          box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.08);
-          overflow: hidden;
-          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          cursor: pointer;
-          box-sizing: border-box;
-          padding: 10px;
-          text-decoration: none;
-          position: relative;
-          border-top: 5px solid var(--accent);
+          display: flex; flex-direction: column; background: #fff; border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.06); overflow: hidden; transition: transform 0.3s ease;
+          cursor: pointer; padding: 8px; text-decoration: none; border-top: 4px solid var(--accent);
+          height: 240px; box-sizing: border-box; position: relative;
         }}
-
-        .card:hover {{
-          transform: translateY(-12px);
-          box-shadow: 0px 20px 30px rgba(0, 0, 0, 0.12);
-        }}
-
-        .theme-1 {{ --accent: #ce1126; --accent-soft: rgba(206, 17, 38, 0.1); }}
-        .theme-2 {{ --accent: #002395; --accent-soft: rgba(0, 35, 149, 0.1); }}
-        .theme-3 {{ --accent: #007a4d; --accent-soft: rgba(0, 122, 77, 0.1); }}
-        .theme-4 {{ --accent: #ffb612; --accent-soft: rgba(255, 182, 18, 0.1); }}
-        .theme-5 {{ --accent: #111827; --accent-soft: rgba(17, 24, 39, 0.1); }}
-
+        .card:hover {{ transform: scale(1.03); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }}
+        .theme-1 {{ --accent: #ce1126; }} .theme-2 {{ --accent: #002395; }} 
+        .theme-3 {{ --accent: #007a4d; }} .theme-4 {{ --accent: #ffb612; }} 
+        .theme-5 {{ --accent: #111827; }}
         .card-image-container {{
-          width: 100%;
-          height: 150px;
-          border-radius: 8px;
-          margin-bottom: 10px;
-          overflow: hidden;
-          background-color: #f8fafc;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          border: 1px solid #e2e8f0;
+          width: 100%; height: 100px; border-radius: 8px; margin-bottom: 6px;
+          overflow: hidden; background: #f1f5f9; display: flex; align-items: center; justify-content: center;
+          position: relative; border: 1px solid #e2e8f0;
         }}
-
-        .card-media {{
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.5s;
-        }}
-
-        .card:hover .card-media {{
-          transform: scale(1.08);
-        }}
-
+        .card-media {{ width: 100%; height: 100%; object-fit: cover; }}
         .media-overlay {{
-          position: absolute;
-          inset: 0;
-          background: rgba(0,0,0,0.3);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          transition: opacity 0.3s;
-          color: white;
-          font-weight: 700;
-          font-size: 14px;
+          position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex;
+          align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;
+          color: white; font-weight: 600; font-size: 10px;
         }}
-
-        .card:hover .media-overlay {{
-          opacity: 1;
-        }}
-
-        .media-icon {{
-          font-size: 18px;
-          margin-right: 6px;
-        }}
-
-        .card-content {{
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }}
-
+        .card:hover .media-overlay {{ opacity: 1; }}
+        .card-content {{ display: flex; flex-direction: column; gap: 4px; flex-grow: 1; }}
         .card-title {{
-          margin: 0;
-          font-size: 16px;
-          font-weight: 700;
-          color: #1e293b;
-          -webkit-line-clamp: 1;
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
+          margin: 0; font-size: 13px; font-weight: 700; color: #1e293b;
+          display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
         }}
-
-        .card-des {{
-          margin: 0;
-          font-size: 12px;
-          color: #64748b;
-          -webkit-line-clamp: 1;
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }}
-
         .details-container {{
-          margin-top: 8px;
+          background: #f8fafc; padding: 4px 6px; border-radius: 4px; font-size: 10px;
+          font-weight: 600; color: #64748b;
         }}
-
-        .card-title {{
-          margin: 0 0 6px;
-          font-size: 17px;
-          font-weight: 600;
-          color: var(--card-accent);
-          overflow: hidden;
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 1;
-          line-clamp: 1;
-        }}
-
-        .card-des {{
-          margin: 0;
-          min-height: 34px;
-          font-size: 13px;
-          color: var(--card-text);
-          overflow: hidden;
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 2;
-          line-clamp: 2;
-        }}
-
+        .detail-row {{ display: flex; justify-content: space-between; }}
         .card-btn {{
-          margin-top: auto;
-          text-decoration: none;
-          font-size: 15px;
-          color: var(--card-button-text);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background: linear-gradient(90deg, var(--card-accent), var(--card-accent-soft));
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          overflow: hidden;
-          transition: all ease-in-out 0.5s;
-          gap: 1px;
-          box-sizing: border-box;
-          padding-left: 6px;
+          background: var(--accent); color: #fff; width: 22px; height: 22px;
+          border-radius: 20px; display: flex; align-items: center; justify-content: center;
+          transition: all 0.4s ease; margin-top: auto; align-self: flex-start;
+          overflow: hidden; gap: 4px; font-size: 11px;
         }}
-
-        .card-btn:hover {{
-          width: 100%;
-          gap: 10px;
-          padding: 0;
-          background: linear-gradient(90deg, #111827 0%, var(--card-accent) 58%, var(--card-accent-soft) 100%);
-          box-shadow: 0 14px 26px var(--card-hover-shadow);
-        }}
-
-        .play-icon {{
-          width: 14px;
-          height: 14px;
-          fill: currentColor;
-        }}
-
-        .card-btn-text {{
-          opacity: 0;
-          font-size: 1px;
-          font-weight: 500;
-          transition: all ease-in-out 0.5s;
-          white-space: nowrap;
-        }}
-
-        .card-btn:hover > .card-btn-text {{
-          opacity: 1;
-          font-size: 14px;
-        }}
+        .card:hover .card-btn {{ width: 100%; height: 26px; border-radius: 6px; }}
+        .card-btn-text {{ display: none; white-space: nowrap; }}
+        .card:hover .card-btn-text {{ display: inline; }}
       </style>
     </html>
     '''
@@ -945,229 +769,87 @@ def build_blog_ad_card_html(ad):
     action_text = action_label if action_url else "Visit Merchant"
     link_attrs = f' href="{escape(action_url, quote=True)}" target="_blank" rel="noopener noreferrer"' if action_url else ""
     button_tag = "a" if action_url else "div"
-
     return f'''
     <html>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
       </head>
       <body>
-        <{button_tag} class="card"{link_attrs}>
-          <div class="card-content">
-            <p class="ad-tag">Sponsored • {timestamp}</p>
-            {media_markup}
-            <p class="card-title">{title}</p>
-            <p class="card-des">{description}</p>
-            
-            <div class="details-container">
-              <div class="detail-row">
-                <span class="detail-label">📍 Location:</span>
-                <span class="detail-value">{location}</span>
+        <div class="card-wrap">
+          <{button_tag} class="card"{link_attrs}>
+            <div class="card-content">
+              <p class="ad-tag">Sponsored • {timestamp}</p>
+              {media_markup}
+              <p class="card-title">{title}</p>
+              <p class="card-des">{description}</p>
+              
+              <div class="details-container">
+                <div class="detail-row">
+                  <span>📍 {location}</span>
+                  <span>💰 {price}</span>
+                </div>
+                <div class="detail-row" style="margin-top:2px; font-size:9px; color:#94a3b8;">
+                   <span>👤 {author}</span>
+                   <span>💬 {whatsapp}</span>
+                </div>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">💰 Price:</span>
-                <span class="detail-value">{price}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">👤 Posted by:</span>
-                <span class="detail-value">{author}</span>
-              </div>
-            </div>
 
-            <div class="card-footer">
-              <span class="footer-tag">💬 {whatsapp}</span>
+              <div class="card-btn">
+                {action_icon}
+                <span class="card-btn-text">{escape(action_text)}</span>
+              </div>
             </div>
-
-            <div class="card-btn">
-              {action_icon}
-              <span class="card-btn-text">{escape(action_text)}</span>
-            </div>
-          </div>
-        </{button_tag}>
+          </{button_tag}>
+        </div>
       </body>
       <style>
-        body {{
-          margin: 0;
-          padding: 8px 12px 24px;
-          background: transparent;
-          font-family: 'Outfit', sans-serif;
-        }}
-
+        body {{ margin: 0; padding: 0; font-family: 'Outfit', sans-serif; background: transparent; }}
+        .card-wrap {{ display: flex; justify-content: center; padding: 10px; }}
         .card {{
-          display: block;
           width: 100%;
-          background-color: #ffffff;
-          border-radius: 24px;
-          box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.08);
+          max-width: 580px;
+          background: #fff;
+          border-radius: 16px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
           overflow: hidden;
-          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          cursor: pointer;
-          box-sizing: border-box;
           text-decoration: none;
-          border-top: 8px solid #002395;
-          margin-bottom: 24px;
-          padding: 0;
+          border: 1px solid #f1f5f9;
+          transition: transform 0.3s ease;
         }}
-
-        .card:hover {{
-          transform: translateY(-8px);
-          box-shadow: 0px 20px 30px rgba(0, 0, 0, 0.12);
-        }}
-
-        .card-content {{
-          padding: 32px;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }}
-
-        .ad-tag {{
-          font-size: 11px;
-          font-weight: 800;
-          text-transform: uppercase;
-          color: #94a3b8;
-          margin: 0;
-          letter-spacing: 0.1em;
-        }}
-
+        .card:hover {{ transform: scale(1.01); }}
+        .card-content {{ padding: 16px; display: flex; flex-direction: column; gap: 8px; }}
+        .ad-tag {{ margin: 0; font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }}
+        
         .card-image-container {{
-          width: 100%;
-          max-height: 550px;
-          border-radius: 16px;
-          overflow: hidden;
-          background-color: #f8fafc;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          border: 1px solid #e2e8f0;
+          width: 100%; height: 220px; border-radius: 12px; overflow: hidden;
+          background: #f8fafc; position: relative; border: 1px solid #f1f5f9;
         }}
-
-        .card-media {{
-          width: 100%;
-          border-radius: inherit;
-          transition: transform 0.5s;
-        }}
-
-        .card:hover .card-media {{
-          transform: scale(1.02);
-        }}
-
+        .card-media {{ width: 100%; height: 100%; object-fit: cover; }}
         .media-overlay {{
-          position: absolute;
-          inset: 0;
-          background: rgba(0,0,0,0.2);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          transition: opacity 0.3s;
-          color: white;
-          font-weight: 700;
-          font-size: 18px;
-          pointer-events: none;
+          position: absolute; inset: 0; background: rgba(0,0,0,0.2);
+          display: flex; align-items: center; justify-content: center;
+          opacity: 0; transition: opacity 0.3s; color: white; font-weight: 600; font-size: 12px;
         }}
+        .card-image-container:hover .media-overlay {{ opacity: 1; }}
 
-        .card:hover .media-overlay {{
-          opacity: 1;
-        }}
-
-        .media-icon {{
-          font-size: 24px;
-          margin-right: 10px;
-        }}
-
-        .card-title {{
-          margin: 0;
-          font-size: 28px;
-          font-weight: 700;
-          color: #1e293b;
-          line-height: 1.2;
-        }}
-
-        .card-des {{
-          margin: 0;
-          font-size: 16px;
-          color: #475569;
-          line-height: 1.6;
-        }}
-
+        .card-title {{ margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }}
+        .card-des {{ margin: 0; font-size: 13px; color: #64748b; line-height: 1.5; }}
+        
         .details-container {{
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          padding: 20px;
-          background: #f1f5f9;
-          border-radius: 16px;
-          margin: 8px 0;
+          background: #f8fafc; padding: 10px; border-radius: 10px; border-left: 4px solid #002395;
         }}
-
-        .detail-row {{
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }}
-
-        .detail-label {{
-          font-size: 13px;
-          color: #64748b;
-          font-weight: 600;
-        }}
-
-        .detail-value {{
-          font-size: 14px;
-          color: #1e293b;
-          font-weight: 700;
-        }}
-
-        .card-footer {{
-          display: flex;
-          justify-content: space-between;
-          font-size: 12px;
-          color: #64748b;
-          font-weight: 600;
-          padding-top: 8px;
-        }}
+        .detail-row {{ display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #475569; }}
 
         .card-btn {{
-          font-size: 15px;
-          color: #fff;
-          cursor: pointer;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background-color: #002395;
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
-          overflow: hidden;
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-          gap: 12px;
-          margin-top: 16px;
-          box-shadow: 0 4px 6px -1px rgba(0, 35, 149, 0.2);
+          background: #002395; color: #fff; height: 36px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center; gap: 10px;
+          margin-top: 4px; font-weight: 700; font-size: 14px; transition: background 0.3s;
         }}
-
-        .card-btn:hover {{
-          width: 100%;
-          height: 48px;
-          box-shadow: 0 20px 25px -5px rgba(0, 35, 149, 0.3);
-        }}
-
-        .card-btn-text {{
-          display: none;
-          font-weight: 700;
-          white-space: nowrap;
-        }}
-
-        .card-btn:hover .card-btn-text {{
-          display: inline;
-        }}
+        .card-btn:hover {{ background: #1e40af; }}
+        .card-btn svg {{ width: 14px; height: 14px; }}
       </style>
     </html>
     '''
-
 
 
 def build_blog_post_card_html(entry):
@@ -2332,9 +2014,14 @@ apply_south_africa_theme()
 st.title("National Dialog: South Africa")
 st.caption("A national platform to understand public preferences, retail habits, and service experiences across South Africa.")
 
+# --- TOP AD SHOWCASE (Foldable) ---
+if ads_data:
+    with st.expander("📢 Featured Community Ads", expanded=True):
+        st.components.v1.html(build_ad_showcase_html(ads_data), height=280)
+
 # --- AD SPACE ---
 st.markdown("---")
-st.subheader("Ad Space")
+st.subheader("Ad Space / Advertise")
 ad_form_col, ad_preview_col = st.columns([1, 2])
 
 with ad_form_col:
@@ -2396,10 +2083,9 @@ with ad_form_col:
             st.rerun()
 
 with ad_preview_col:
-    st.caption("Current ads with links to their matching placements in the public blog feed")
+    st.caption("Current ads with grid-based layout for better screen visibility")
     if ads_data:
-        for ad in reversed(ads_data[-6:]):
-            render_ad_card(ad)
+        components.html(build_ad_showcase_html(ads_data), height=600, scrolling=True)
     else:
         render_empty_state("No ads yet. Use the form to publish the first ad.")
 
