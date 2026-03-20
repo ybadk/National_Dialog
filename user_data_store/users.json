@@ -178,5 +178,12 @@
     "phone": "0821234567",
     "email": "test@example.com",
     "timestamp": "2026-03-19T17:58:43.152718"
+  },
+  {
+    "name": "Kgothatso",
+    "gender": "Male",
+    "phone": "0684023284",
+    "email": "kgothatsothooe@gmail.com",
+    "timestamp": "2026-03-20T14:12:55.541476"
   }
 ]

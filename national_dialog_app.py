@@ -665,7 +665,7 @@ def build_ad_showcase_html(ads):
                     {action_icon}
                     <span class="card-btn-text">{escape(action_text)}</span>
                   </a>
-                  <a class="card-btn feed-btn" href="#blog-ad-{ad_id}" target="_top" onclick="window.parent.location.hash='blog-ad-{ad_id}'; return true;">
+                  <a class="card-btn feed-btn" href="#ad-{ad_id}" target="_top" onclick="window.parent.location.hash='ad-{ad_id}'; return true;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width:10px;height:10px;fill:currentColor;"><path d="M448 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h384c35.35 0 64-28.65 64-64V96c0-35.35-28.65-64-64-64zM256 416H96v-32h160v32zm160-96H96v-32h320v32zm0-96H96v-32h320v32zm0-96H96V96h320v32z"/></svg>
                     <span class="card-btn-text">Feed</span>
                   </a>
@@ -750,6 +750,7 @@ def build_ad_showcase_html(ads):
 
 
 def build_blog_ad_card_html(ad):
+    ad_id = escape(str(ad.get("ad_id", "ad-default")))
     title = escape(str(ad.get("title", "Sponsored Ad")))
     description = escape(str(ad.get("description", "Community promotion")))
     price = escape(str(ad.get("price") or "Price on Request"))
@@ -759,111 +760,246 @@ def build_blog_ad_card_html(ad):
     timestamp = escape(str(ad.get("timestamp") or "Just now"))
     media_kind, media_uri = get_media_data_uri(ad.get("media"))
     
-    action_icon = """
-    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 384 512" stroke-width="0" fill="currentColor" stroke="currentColor">
-      <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"></path>
-    </svg>
-    """
+    action_url, action_label = get_ad_action(ad)
+    action_text = action_label if action_url else "Visit Merchant"
 
     if media_uri and media_kind == "video":
         media_markup = (
-            f'<div class="card-image-container">'
+            f'<div class="card-media-wrapper">'
             f'<video class="card-media" controls playsinline preload="metadata" src="{media_uri}"></video>'
-            f'<div class="media-overlay"><span class="media-icon">▶</span> Watch Video</div>'
             f'</div>'
         )
     elif media_uri:
         media_markup = (
-            f'<div class="card-image-container">'
+            f'<div class="card-media-wrapper">'
             f'<img class="card-media" src="{media_uri}" alt="{title}">'
-            f'<div class="media-overlay"><span class="media-icon">👁</span> View Full Image</div>'
             f'</div>'
         )
     else:
-        media_markup = '<div class="card-image-container"><div class="fallback-media">AD</div></div>'
+        media_markup = '<div class="card-media-wrapper"><div class="fallback-media">AD</div></div>'
 
-    action_url, action_label = get_ad_action(ad)
-    action_text = action_label if action_url else "Visit Merchant"
-    link_attrs = f' href="{escape(action_url, quote=True)}" target="_blank" rel="noopener noreferrer"' if action_url else ""
-    button_tag = "a" if action_url else "div"
+    website_button = ""
+    if ad.get("link"):
+        website_button = f'''
+        <a class="website-btn" href="{escape(ad["link"], quote=True)}" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          Visit Website
+        </a>
+        '''
+
     return f'''
     <html>
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
       </head>
       <body>
-        <div class="card-wrap">
-          <{button_tag} class="card"{link_attrs}>
-            <div class="card-content">
-              <p class="ad-tag">Sponsored • {timestamp}</p>
+        <div id="ad-{ad_id}" class="card-anchor"></div>
+        <div class="card-container">
+          <div class="card-grid">
+            <!-- Left Column: Media & Contact -->
+            <div class="column-left">
               {media_markup}
-              <p class="card-title">{title}</p>
-              <p class="card-des">{description}</p>
-              
-              <div class="details-container">
-                <div class="detail-row">
-                  <span>📍 {location}</span>
-                  <span>💰 {price}</span>
-                </div>
-                <div class="detail-row" style="margin-top:2px; font-size:9px; color:#94a3b8;">
-                   <span>👤 {author}</span>
-                   <span>💬 {whatsapp}</span>
-                </div>
-              </div>
-
-              <div class="card-btn">
-                {action_icon}
-                <span class="card-btn-text">{escape(action_text)}</span>
+              <div class="contact-info">
+                <p class="contact-title">Media Contact</p>
+                <div class="contact-row"><span>👤</span> {author}</div>
+                <div class="contact-row"><span>💬</span> {whatsapp}</div>
+                <div class="contact-row"><span>📍</span> {location}</div>
               </div>
             </div>
-          </{button_tag}>
+            
+            <!-- Right Column: Details -->
+            <div class="column-right">
+              <div class="card-header">
+                <span class="ad-tag">SPONSORED AD</span>
+                <span class="timestamp">{timestamp}</span>
+              </div>
+              <h1 class="card-title">{title}</h1>
+              <p class="card-description">{description}</p>
+              
+              <div class="price-box">
+                <span class="price-label">Price</span>
+                <span class="price-value">💰 {price}</span>
+              </div>
+              
+              <div class="action-footer">
+                {website_button}
+                <a class="contact-btn" href="{escape(action_url or '#', quote=True)}" target="_blank">
+                   <span>{escape(action_text)}</span>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </body>
       <style>
-        body {{ margin: 0; padding: 0; font-family: 'Outfit', sans-serif; background: transparent; }}
-        .card-wrap {{ display: flex; justify-content: center; padding: 10px; }}
-        .card {{
-          width: 100%;
-          max-width: 580px;
-          background: #fff;
-          border-radius: 16px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-          overflow: hidden;
-          text-decoration: none;
-          border: 1px solid #f1f5f9;
-          transition: transform 0.3s ease;
+        :root {{
+          --primary: #002395;
+          --accent: #ce1126;
+          --text-main: #1e293b;
+          --text-muted: #64748b;
+          --bg-light: #f8fafc;
+          --border: #e2e8f0;
         }}
-        .card:hover {{ transform: scale(1.01); }}
-        .card-content {{ padding: 16px; display: flex; flex-direction: column; gap: 8px; }}
-        .ad-tag {{ margin: 0; font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }}
+        body {{ margin: 0; padding: 10px; font-family: 'Outfit', sans-serif; background: transparent; overflow: hidden; }}
         
-        .card-image-container {{
-          width: 100%; height: 220px; border-radius: 12px; overflow: hidden;
-          background: #f8fafc; position: relative; border: 1px solid #f1f5f9;
+        .card-anchor {{ position: absolute; top: -20px; }}
+        
+        .card-container {{
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+          border: 1px solid var(--border);
+          overflow: hidden;
+          max-width: 800px;
+          margin: 0 auto;
+        }}
+        
+        .card-grid {{
+          display: grid;
+          grid-template-columns: 1fr 1.2fr;
+          min-height: 480px;
+        }}
+        
+        @media (max-width: 600px) {{
+          .card-grid {{ grid-template-columns: 1fr; }}
+        }}
+
+        /* Left Column */
+        .column-left {{
+          background: var(--bg-light);
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          border-right: 1px solid var(--border);
+        }}
+        
+        .card-media-wrapper {{
+          width: 100%;
+          aspect-ratio: 1;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+          background: #000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }}
         .card-media {{ width: 100%; height: 100%; object-fit: cover; }}
-        .media-overlay {{
-          position: absolute; inset: 0; background: rgba(0,0,0,0.2);
-          display: flex; align-items: center; justify-content: center;
-          opacity: 0; transition: opacity 0.3s; color: white; font-weight: 600; font-size: 12px;
-        }}
-        .card-image-container:hover .media-overlay {{ opacity: 1; }}
-
-        .card-title {{ margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }}
-        .card-des {{ margin: 0; font-size: 13px; color: #64748b; line-height: 1.5; }}
         
-        .details-container {{
-          background: #f8fafc; padding: 10px; border-radius: 10px; border-left: 4px solid #002395;
+        .fallback-media {{
+          width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+          background: linear-gradient(135deg, var(--primary), var(--accent));
+          color: white; font-weight: 800; font-size: 32px;
         }}
-        .detail-row {{ display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #475569; }}
+        
+        .contact-info {{
+          background: white;
+          padding: 16px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+        }}
+        .contact-title {{
+          margin: 0 0 10px 0;
+          font-size: 11px;
+          font-weight: 800;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }}
+        .contact-row {{
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-main);
+          margin-bottom: 6px;
+        }}
+        .contact-row span {{ width: 18px; text-align: center; }}
 
-        .card-btn {{
-          background: #002395; color: #fff; height: 36px; border-radius: 10px;
-          display: flex; align-items: center; justify-content: center; gap: 10px;
-          margin-top: 4px; font-weight: 700; font-size: 14px; transition: background 0.3s;
+        /* Right Column */
+        .column-right {{
+          padding: 32px;
+          display: flex;
+          flex-direction: column;
         }}
-        .card-btn:hover {{ background: #1e40af; }}
-        .card-btn svg {{ width: 14px; height: 14px; }}
+        
+        .card-header {{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+        }}
+        .ad-tag {{
+          font-size: 10px;
+          font-weight: 800;
+          background: var(--primary);
+          color: white;
+          padding: 3px 8px;
+          border-radius: 4px;
+        }}
+        .timestamp {{ font-size: 11px; color: var(--text-muted); font-weight: 600; }}
+        
+        .card-title {{
+          margin: 0 0 12px 0;
+          font-size: 24px;
+          font-weight: 800;
+          color: #0f172a;
+          line-height: 1.2;
+        }}
+        
+        .card-description {{
+          margin: 0 0 24px 0;
+          font-size: 15px;
+          color: var(--text-muted);
+          line-height: 1.6;
+          flex-grow: 1;
+        }}
+        
+        .price-box {{
+          background: #f1f5f9;
+          padding: 16px;
+          border-radius: 12px;
+          margin-bottom: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }}
+        .price-label {{ font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }}
+        .price-value {{ font-size: 18px; font-weight: 800; color: var(--primary); }}
+        
+        .action-footer {{
+          display: flex;
+          gap: 12px;
+        }}
+        
+        .website-btn, .contact-btn {{
+          flex: 1;
+          height: 44px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          text-decoration: none;
+          font-weight: 700;
+          font-size: 14px;
+          transition: all 0.3s ease;
+        }}
+        
+        .website-btn {{
+          background: white;
+          color: var(--text-main);
+          border: 1px solid var(--border);
+        }}
+        .website-btn:hover {{ background: #f8fafc; border-color: var(--text-muted); }}
+        
+        .contact-btn {{
+          background: var(--primary);
+          color: white;
+        }}
+        .contact-btn:hover {{ background: #1e3a8a; transform: translateY(-1px); }}
       </style>
     </html>
     '''
@@ -2204,21 +2340,21 @@ if recent_blog_entries:
         if ads_data and idx < len(recent_blog_entries) - 1 and idx % 2 == 0:
             ad_index = (idx // 2) % len(ads_data)
             ad = ads_data[ad_index]
-            st.markdown(f'<div id="blog-ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
-            components.html(build_blog_ad_card_html(ad), height=500, scrolling=False)
+            st.markdown(f'<div id="ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
+            components.html(build_blog_ad_card_html(ad), height=650, scrolling=False)
 
     if ads_data:
         used_count = min(len(ads_data), max(0, len(recent_blog_entries) // 2))
         remaining_ads = ads_data[used_count:]
         for ad in remaining_ads:
-            st.markdown(f'<div id="blog-ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
-            components.html(build_blog_ad_card_html(ad), height=500, scrolling=False)
+            st.markdown(f'<div id="ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
+            components.html(build_blog_ad_card_html(ad), height=650, scrolling=False)
 else:
     if ads_data:
         st.caption("No blog posts yet, but sponsored ads are already available below.")
         for ad in reversed(ads_data):
-            st.markdown(f'<div id="blog-ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
-            components.html(build_blog_ad_card_html(ad), height=500, scrolling=False)
+            st.markdown(f'<div id="ad-{escape(ad.get("ad_id", ""), quote=True)}"></div>', unsafe_allow_html=True)
+            components.html(build_blog_ad_card_html(ad), height=650, scrolling=False)
     else:
         render_empty_state("No public responses yet. Submit a form to start the conversation.")
 
